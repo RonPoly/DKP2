@@ -872,7 +872,7 @@ function myClass.PlayerMenu(self,List)
   local menu={}
 
   if #sel == 1 then
-    table.insert(menu, {text = "Make Alt", func = function()
+    table.insert(menu, {text = "ALT MANAGEMENT", func = function()
       QDKP2GUI_AltManagement:Show(sel[1])
     end})
   end
