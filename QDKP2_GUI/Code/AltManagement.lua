@@ -6,7 +6,7 @@
 --
 
 local AltManagement = {}
-AltManagement.ENTRIES_PER_PAGE = 18
+AltManagement.ENTRIES_PER_PAGE = 20 -- Increased to match XML
 AltManagement.listData = {} -- This will hold the structured list of mains and alts
 
 function AltManagement:Show(mainCharacter)
@@ -20,7 +20,13 @@ function AltManagement:Show(mainCharacter)
 end
 
 function AltManagement:Hide()
-    self.Frame:Hide()
+    if self.Frame then
+        self.Frame:Hide()
+    end
+end
+
+function AltManagement:OnSearchTextChanged()
+    self:BuildAndDisplayList()
 end
 
 function AltManagement:BuildAndDisplayList()
@@ -46,7 +52,7 @@ function AltManagement:BuildAndDisplayList()
     
     -- Now build the flat display list from the structured data
     local sortedMains = {}
-    for name, _ in pairs(mains) do
+    for name, data in pairs(mains) do
         table.insert(sortedMains, name)
     end
     table.sort(sortedMains)
@@ -69,12 +75,12 @@ function AltManagement:BuildAndDisplayList()
         
         if not filter or mainMatches or altMatches then
             -- Add the main character to the list
-            table.insert(self.listData, { name = name, indent = 0, isMain = true, isCurrentMain = isMainCharacter })
+            table.insert(self.listData, { name = name, indent = 5, isMain = true, isCurrentMain = isMainCharacter })
             
             -- Add their existing alts
             table.sort(data.alts)
             for _, altName in ipairs(data.alts) do
-                table.insert(self.listData, { name = altName, indent = 15, isAlt = true, main = name })
+                table.insert(self.listData, { name = altName, indent = 25, isAlt = true, main = name })
             end
         end
     end
@@ -88,6 +94,12 @@ function AltManagement:PopulateVisibleList()
     
     for i = 1, self.ENTRIES_PER_PAGE do
         local entryFrame = _G["QDKP2_AltManagementFrame_ListContainer_Entry"..i]
+        
+        if not entryFrame then 
+            -- This check prevents errors if the XML hasn't loaded yet.
+            return 
+        end
+
         local dataIndex = i + offset
         local data = self.listData[dataIndex]
         
@@ -105,7 +117,7 @@ function AltManagement:PopulateVisibleList()
             -- Set colors and status text
             if data.isCurrentMain then
                 nameLabel:SetTextColor(1, 0.82, 0)
-                statusLabel:SetText("|cffffd100(Main)|r")
+                statusLabel:SetText("|cffffd100(Current Main)|r")
                 actionButton:Hide()
             elseif data.isMain then
                 nameLabel:SetTextColor(1, 1, 1)

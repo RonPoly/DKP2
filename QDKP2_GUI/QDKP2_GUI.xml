@@ -2882,11 +2882,19 @@
     </Scripts>
   </Frame>
   <Frame name="QDKP2_AltManagement_EntryTemplate" virtual="true">
-    <Size x="280" y="18"/>
+    <Size x="350" y="18"/>
     <Layers>
       <Layer level="ARTWORK">
-        <FontString name="$parent_Name" inherits="GameFontNormalSmall" justifyH="LEFT"/>
-        <FontString name="$parent_Status" inherits="GameFontNormalSmall" justifyH="RIGHT"/>
+        <FontString name="$parent_Name" inherits="GameFontNormalSmall" justifyH="LEFT">
+          <Anchors>
+            <Anchor point="LEFT" x="5" y="0"/>
+          </Anchors>
+        </FontString>
+        <FontString name="$parent_Status" inherits="GameFontNormalSmall" justifyH="RIGHT">
+           <Anchors>
+            <Anchor point="RIGHT" x="-80" y="0"/>
+          </Anchors>
+        </FontString>
       </Layer>
     </Layers>
     <Frames>
@@ -2906,7 +2914,7 @@
   </Frame>
 
   <Frame name="QDKP2_AltManagementFrame" inherits="QDKP2DialogTitled" hidden="true">
-    <Size x="400" y="500" />
+    <Size x="450" y="500" />
     <Anchors>
       <Anchor point="CENTER" />
     </Anchors>
@@ -2950,53 +2958,51 @@
         </Anchors>
         <Scripts>
           <OnTextChanged>
-        QDKP2GUI_AltManagement:BuildAndDisplayList()
-      </OnTextChanged>
-  <OnEnterPressed>
-        self:ClearFocus();
-      </OnEnterPressed>
-    </Scripts>
+            QDKP2GUI_AltManagement:BuildAndDisplayList()
+          </OnTextChanged>
+          <OnEnterPressed>
+            self:ClearFocus();
+          </OnEnterPressed>
+        </Scripts>
       </EditBox>
       <Frame name="$parent_ListContainer">
-        <Size x="350" y="360"/>
+        <Size x="400" y="360"/>
         <Anchors>
-          <Anchor point="TOP" relativeTo="$parent_SearchBox" relativePoint="BOTTOM">
-            <Offset x="0" y="-10"/>
-          </Anchor>
+            <Anchor point="TOP" relativeTo="$parent_SearchBox" relativePoint="BOTTOM">
+                <Offset x="0" y="-10"/>
+            </Anchor>
         </Anchors>
-        <Frames>
-            </Frames>
       </Frame>
       <ScrollFrame name="$parent_ScrollFrame" inherits="FauxScrollFrameTemplate">
         <Anchors>
           <Anchor point="TOPRIGHT" relativeTo="$parent_ListContainer" relativePoint="TOPRIGHT">
-    <Offset x="25" y="-2"/>
-  </Anchor>
+            <Offset x="25" y="-2"/>
+          </Anchor>
           <Anchor point="BOTTOMRIGHT" relativeTo="$parent_ListContainer" relativePoint="BOTTOMRIGHT">
-    <Offset x="25" y="2"/>
-  </Anchor>
+            <Offset x="25" y="2"/>
+          </Anchor>
         </Anchors>
-<Scripts>
-  <OnVerticalScroll>
-    FauxScrollFrame_OnVerticalScroll(self, offset, 18, QDKP2GUI_AltManagement.PopulateVisibleList);
-  </OnVerticalScroll>
-</Scripts>
+        <Scripts>
+          <OnVerticalScroll>
+            FauxScrollFrame_OnVerticalScroll(self, offset, 18, QDKP2GUI_AltManagement.PopulateVisibleList);
+          </OnVerticalScroll>
+        </Scripts>
       </ScrollFrame>
     </Frames>
-<Scripts>
-<OnLoad>
-QDKP2GUI_AltManagement.Frame = self;
-for i=1, 18 do
-local entry = CreateFrame("Frame", "$parent_ListContainer_Entry" .. i, self:GetParent().ListContainer, "QDKP2_AltManagement_EntryTemplate")
-if i == 1 then
-entry:SetPoint("TOPLEFT", 10, 0);
-else
-entry:SetPoint("TOPLEFT", _G["QDKP2_AltManagementFrame_ListContainer_Entry" .. (i-1)], "BOTTOMLEFT", 0, -2);
-end
-end
-</OnLoad>
-</Scripts>
-  </Frame>
+    <Scripts>
+      <OnLoad>
+        QDKP2GUI_AltManagement.Frame = self;
+        for i=1, 20 do -- Increased to 20 entries
+          local entry = CreateFrame("Frame", self:GetName() .. "_ListContainer_Entry" .. i, self.ListContainer, "QDKP2_AltManagement_EntryTemplate")
+          if i == 1 then
+            entry:SetPoint("TOPLEFT", 10, 0);
+          else
+            entry:SetPoint("TOPLEFT", _G[self:GetName() .. "_ListContainer_Entry" .. (i-1)], "BOTTOMLEFT", 0, -2);
+          end
+        end
+      </OnLoad>
+    </Scripts>
+      </Frame>
 </Ui>
 
 
