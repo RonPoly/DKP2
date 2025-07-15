@@ -2918,6 +2918,8 @@ QDKP2GUI_AltManagement:HandleActionClick(self:GetParent());
     <Anchors>
       <Anchor point="CENTER" />
     </Anchors>
+    <Layers>
+        </Layers>
     <Frames>
       <Button name="$parent_CloseButton" inherits="UIPanelCloseButton">
         <Anchors><Anchor point="TOPRIGHT" x="-4" y="-4" /></Anchors>
@@ -2931,7 +2933,7 @@ QDKP2GUI_AltManagement:HandleActionClick(self:GetParent());
   <OnEnterPressed>self:ClearFocus();</OnEnterPressed>
         </Scripts>
       </EditBox>
-      <ScrollFrame name="$parent_ScrollFrame" inherits="FauxScrollFrameTemplate">
+      <ScrollFrame name="QDKP2_AltManagementFrame_ScrollFrame" inherits="FauxScrollFrameTemplate">
         <Size x="420" y="400"/>
         <Anchors><Anchor point="TOP" relativeTo="$parent_SearchBox" relativePoint="BOTTOM" x="0" y="-10"/></Anchors>
         <Scripts>
@@ -2947,12 +2949,14 @@ QDKP2GUI_AltManagement:HandleActionClick(self:GetParent());
 QDKP2GUI_AltManagement.Frame = self;
             QDKP2GUI_AltManagement.entries = {};
 
-            -- Create the scrollable container
-            self.scrollChild = CreateFrame("Frame", nil, self.ScrollFrame);
+            -- Create the container that will be scrolled
+            self.scrollChild = CreateFrame("Frame", nil, self);
             self.scrollChild:SetSize(420, 400);
-            self.ScrollFrame:SetScrollChild(self.scrollChild);
 
-            -- Create and correctly parent the list entries
+            -- Use the scroll frame's global name to correctly set its child
+            QDKP2_AltManagementFrame_ScrollFrame:SetScrollChild(self.scrollChild);
+
+            -- Create and correctly parent the list entries inside the scrollable container
             local previousEntry;
             for i=1, 22 do
                 local entry = CreateFrame("Frame", nil, self.scrollChild, "QDKP2_AltManagement_EntryTemplate");
