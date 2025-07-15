@@ -1,0 +1,104 @@
+Release Log:
+
+V2.7.4 (12/01/2011)
+*Fixed various scroll wheel problems on scroll up
+*Better support added for Cata Raids/bosses
+*Small bugfix applied ot the log file
+*Updated Libs
+*Update supplied for the Options GUI (thanks to LuGe8)
+
+
+V2.7.3 (22/11/2010)
+
+*Some small bug fixes
+*Cataclysm Raid's added
+*Cataclysm End Bosses added
+*New Options.ini settings, please make sure to add your changes in
+*On looting if you are in a raid and are master looter you will now get a Bid button next to the item in the loot window. Pressing it will automatically open the bid manager. On Bid winner if you have the loot window open Quick DKP will give the item to the winner (does give a confirmation box) - THIS FEATURE IS NOT COMPATIBLE WITH LOOTING ADDONS SUCH AS XLOOT. YOU WILL NOT SEE THE BID BUTTON IF YOU HAVE A LOOTING ADDON INSTALLED
+*Added a ton of parameters to the bid manager. Now it should be able to handle all bid rules around.
+*Added a filter to the roster to hide alts (only in guild/raid views). You can set it by right clicking on the roster background->Hide alts
+*Added a "Custom" list to the roster, to enable custom player list like those who took part in a session TBI
+*Added a "Export DKP values" function to the roster, to export the players there. Using this, you can export custom list of players in the order you wish.
+*The "EXCEPTION" section in the options file has been greatly improved. Now, you can set total, partial or no awards for every combination.
+
+V2.6.11 (27/10/10)
+*Bug Fix: Fixed a bug that generated an error when someone running the addon typed "/dkp etc"
+*Bug Fix: The scroll wheel up down should now work as intended on the various boxes where as it was only going down (thanks raz)
+*Bug Fix: The Log files should now expand properly and no error should generate on double click
+
+V2.6.10 Reuploaded (18/10/2010) 
+*Uncommented out the tooltip in the minimap.lua file - tooltip over minimap should now work as intended
+
+V2.6.10 (18/10/2010)
+*Restored most of the functionality within the Log section. However there is still an issue with expanding the raid logs. To work around this right click the log you want to view and click export in the menu > this will now show you the txt and html version of the raid log. This is only a temporary work around untill i can fix the expanding of the logs.
+
+V2.6.9 (18/10/2010)
+*Updated to support WOW Client 4.0.*
+*Functional in the most parts there is a current problem with the log file which i hope to address in the next few days
+
+V2.6.7 (10/3/2010)
+* Added log exporting. Only table output like HTML and plaintext is supported, will add support to webdkp and such in the next release or so.
+* Changed the Deformat lib implementation
+* Added an option to set if you want QDKP to make automatic rolls when receives a bid that need a roll value to be processed but theres none.
+* bid logging now is on by default.
+* Added Toravon the Ice Watcher
+* Fixed a bug that was displaying wrong colors on table export (eg. shaman class color)
+* Added a log entry type for all the bid related entries. 
+
+V2.6.6 (16/02/2010)
+* Fixed the problem with the $mintowin bid parameter, not enabling players to bid all their dkp amount
+* Fixed a minor bug that prevented an alt to be reported as online at session start.
+* Added a control to block alts to be created or cleared while there's an open session.
+* Libraries updates
+
+V2.6.5 (26/01/2010)
+* Fixed (hopefully) the bug that was preventing alts from getting raid awards.
+
+V2.6.4 (22/01/2010)
+* Added an option to set the maximum amount one player can bet.
+* Added "min" and "max" parameters to the bid manager. You can set up limits and/or minimum increase steps to your bids. See the options file for some examples.
+* Added "/roll" special keyword to the bid manager: it triggers a bid when it receive a roll (till now the roll was imported only, no bid was triggered.)
+* Fixed the bug were alt was not getting correct DKP from Raid Awards (always showed 0 dkp).
+* Fixed the bid logging bug where the $BIDTEXT parameter wasn't parsing correctly
+
+V2.6.3 (29/12/09)
+* Fixed the hiding of incoming whispers for the On-demand system and the bid manager.
+* LibBabble-Boss updated
+
+V2.6.2 (10/12/09)
+* Updated TOC number to 30300
+* Updated libraries
+
+V2.6.1 (30/11/09)
+* Bugfix: Fixed a bug that was incorrectly importing external modification on log in, messing up the dkp amounts (often turning negative).
+* Improvement: If a spent DKP log entry has a item link or name as reason, it will be displayed as "xyz purchases [Item] for xx DKP."
+
+V2.6.0 (21/11/09)
+* Feature: Radically changed the session system in QDKP2. The log structure has been redesigned, and all saved data will be wiped on the first launch if you came from a pre 2.6.x version.
+* Feature: The log window has been renamed report window and will display many different reports (like drop history, boss kill progression etc) (NYI)
+* Feature: Bid Manager nows hould be operative! Please mind that it comes with a good all-round configuration, but you can set it to match almost any bid-like scenario.
+* Fearure: Added two export functions, to export all DKP values as plain text, formatted HTML table or XML data.
+* Feature: You can set QDKP to announce DKP*related evenets to the Raid, guild or officer chat (off by default)
+* Feature: You can set QDKP to send whisper every time a player gains or spend dkp, or when he/she loses an award (off by default)
+* Feature: Added default tables for item pricing based on instance and class of item (EG: Weapons in Nax 25).
+* Feature: You can set the percent of the award you want to give to a player. Right click on the player's entry to set it.
+* Feature: Now when you shift click a log entry, you'll get a short but detailed report of that entry in the chat edit box (if opened) (NYI)
+* Improvement: The GUI has been revamped. Too many changes to list them all.
+* Imrpovement: Added a partial french localization (thanks Daniel Valero).
+* Improvement: The "FORMAT" section in the options file has been changed: There aren't formats anymore, you will use flags to set what QDKP will output to the guild notes.
+* Improvement: Using LibBabble for Bosses and Classes. It should make all related functions compatible to all localizations (BossAward, Command Line and whisper system).
+* Improvement: Feature: QDKP now supports Drag&Drop and Shift*click for items. Try it with the toolbox and the DKP entry editor.
+* Improvement: All the characters on the same account share the same guilds database. This means that you'll have the same data across multiple characters if they are in the same guild. Type "/qdkp db" to manage the database.
+* Improvement: Now QDKP listens for boss kills from Deadly Boss Mods OR BigWigs. It still uses the normal slain detector for known bosses.
+* Improvement: Added many permissions checking
+* Improvement: Added a system to guess the time zone, to generate timestamp with a common reference time (the server time). Doesn't work if the time difference is >12 hours
+* Improvement: The dialog you get hovering the QDKP minimap icon will report your DKP officer rights.
+* Imrpovement: Removed the brackets in the notes output. Not really needed IMO
+* Improvement: Introduced cripthography service,that i'll use to validate syncronization packets.
+* Bugfix: Now QDKP won't freeze if you set an alt of his main. Instead, it will give out an error that explain the situation.
+* BugFix: Reduced the chance that a DKP modification isn't imported if you did the same modification. Can still happen for modifications made at the very same time.
+* Bugfix: Changed the way I read whispers. Should create less problem with communication addons.
+* BugFix: Minimap button's parent frame changed to "UIParent" (thx Karaii)
+* Bugfix: Fixed a bug in the event manager that was generating an error when someone posted a link that wasn't an item link (spell link, quest link....)
+* Bugfix: Fixed the "You aren't allowed to do that" message in view-only QDKP when you leave a raid
+* Bugfix: "/qdkp clearalt" command was bugged and always reported wrong syntax.
