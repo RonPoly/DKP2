@@ -88,7 +88,7 @@ function myClass.Refresh(self, forceResort)
     QDKP2frame2_selectList_Bid:SetChecked(false)
     --QDKP2frame2_selectList_Session:SetChecked(false)
 
-    myClass:PupulateList(self)  ----addself
+    self:PupulateList()  ----addself
 
     if self.Sel=="guild" or self.Sel=="custom" then
       myClass:ShowColumn('deltatotal', false)
@@ -271,23 +271,45 @@ function myClass.Update(self)
   GuildRoster()
 end
 
-function myClass.PupulateList(self)
+function myClass.OnSearchTextChanged(self)
+  self:PupulateList(QDKP2_Roster_SearchBox:GetText())
+  self:Refresh(true)
+end
+
+function myClass.PupulateList(self, filter)
   if self.Sel=='guild' then
-    self.List=QDKP2name
+    self.List = {}
+    for _, name in ipairs(QDKP2name) do
+      if not filter or string.find(string.lower(name), string.lower(filter)) then
+        table.insert(self.List, name)
+      end
+    end
     QDKP2frame2_selectList_guild:SetChecked(true)
-	elseif self.Sel=='custom' then
-		self.List=QDKP2GUI_Vars.CustomPlayerRosterList
-		QDKP2frame2_selectList_Custom:SetChecked(true)
+  elseif self.Sel=='custom' then
+    self.List = {}
+    for _, name in ipairs(QDKP2GUI_Vars.CustomPlayerRosterList) do
+      if not filter or string.find(string.lower(name), string.lower(filter)) then
+        table.insert(self.List, name)
+      end
+    end
+    QDKP2frame2_selectList_Custom:SetChecked(true)
   elseif self.Sel=='raid' then
     if QDKP2GUI_Vars.ShowOutGuild then
       local list={}
       for i=1,QDKP2_GetNumRaidMembers() do
         local name = QDKP2_GetRaidRosterInfo(i)
-        table.insert(list,name)
+        if not filter or string.find(string.lower(name), string.lower(filter)) then
+          table.insert(list,name)
+        end
       end
       self.List=list
     else
-      self.List=QDKP2raid
+      self.List = {}
+      for _, name in ipairs(QDKP2raid) do
+        if not filter or string.find(string.lower(name), string.lower(filter)) then
+          table.insert(self.List, name)
+        end
+      end
     end
   elseif self.Sel=='bid' then
     self.List=QDKP2_CopyTable(QDKP2_BidM_GetBidderList())
@@ -420,7 +442,7 @@ end
 function myClass.ChangeList(self,Type)
   QDKP2_Debug(2, "GUI-Roster","Changing view to "..tostring(Type))
   self.Sel=Type
-  myClass:PupulateList()
+  self:PupulateList()
   local list={}
   for i,v in pairs(self.List) do
     if myClass:isSelectedPlayer(v) then table.insert(list,v); end
@@ -848,6 +870,12 @@ function myClass.PlayerMenu(self,List)
   local managing=QDKP2_ManagementMode()
   local sel=List or self.SelectedPlayers
   local menu={}
+
+  if #sel == 1 then
+    table.insert(menu, {text = "Make Alt", func = function()
+      QDKP2GUI_AltManagement:Show(sel[1])
+    end})
+  end
 
   table.insert(menu,LogVoices.QuickMod)
   table.insert(menu,LogVoices.Revert)
