@@ -4,7 +4,13 @@
            ## GRAPHICAL USER INTERFACE ##
 
 -->
-<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/">
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+    <Script file="Code\Log.lua"/>
+    <Script file="Code\Log.Player.lua"/>
+    <Script file="Code\Roster.lua"/>
+    <Script file="Code\ToolBox.lua"/>
+    <Script file="Code\AltManagement.lua"/>
 
   <Frame name="QDKP2GUI">
     <Scripts>
