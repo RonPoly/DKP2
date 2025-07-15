@@ -6,7 +6,7 @@
 --
 
 local AltManagement = {}
-AltManagement.ENTRIES_PER_PAGE = 20 -- Increased to match XML
+AltManagement.ENTRIES_PER_PAGE = 20
 AltManagement.listData = {} -- This will hold the structured list of mains and alts
 
 function AltManagement:Show(mainCharacter)
@@ -16,6 +16,7 @@ function AltManagement:Show(mainCharacter)
     self.Frame:Show()
     QDKP2_AltManagementFrame_SubHeader:SetText("Managing alts for: |cffffd100" .. self.mainCharacter .. "|r")
     QDKP2_AltManagementFrame_SearchBox:SetText("")
+    QDKP2_AltManagementFrame_SearchBox:ClearFocus()
     self:BuildAndDisplayList()
 end
 
@@ -23,10 +24,6 @@ function AltManagement:Hide()
     if self.Frame then
         self.Frame:Hide()
     end
-end
-
-function AltManagement:OnSearchTextChanged()
-    self:BuildAndDisplayList()
 end
 
 function AltManagement:BuildAndDisplayList()
@@ -52,7 +49,7 @@ function AltManagement:BuildAndDisplayList()
     
     -- Now build the flat display list from the structured data
     local sortedMains = {}
-    for name, data in pairs(mains) do
+    for name in pairs(mains) do
         table.insert(sortedMains, name)
     end
     table.sort(sortedMains)
@@ -60,8 +57,8 @@ function AltManagement:BuildAndDisplayList()
     for _, name in ipairs(sortedMains) do
         local data = mains[name]
         local isMainCharacter = (name == self.mainCharacter)
-        
-        -- Filter logic
+
+        -- Filter logic: Show if the main name matches, or if one of its alts matches
         local mainMatches = filter and string.find(string.lower(name), filter)
         local altMatches = false
         if filter then
@@ -94,11 +91,8 @@ function AltManagement:PopulateVisibleList()
     
     for i = 1, self.ENTRIES_PER_PAGE do
         local entryFrame = _G["QDKP2_AltManagementFrame_ListContainer_Entry"..i]
-        
-        if not entryFrame then 
-            -- This check prevents errors if the XML hasn't loaded yet.
-            return 
-        end
+
+        if not entryFrame then return end
 
         local dataIndex = i + offset
         local data = self.listData[dataIndex]
@@ -123,12 +117,14 @@ function AltManagement:PopulateVisibleList()
                 nameLabel:SetTextColor(1, 1, 1)
                 statusLabel:SetText("")
                 actionButton:SetText("Assign")
+                actionButton:Enable()
                 actionButton:Show()
             elseif data.isAlt then
                 nameLabel:SetTextColor(0.8, 0.8, 0.8)
                 statusLabel:SetText("|cffaaaaaa(Alt of " .. data.main .. ")|r")
                 if data.main == self.mainCharacter then
                     actionButton:SetText("Remove")
+                    actionButton:Enable()
                     actionButton:Show()
                 else
                     actionButton:Hide()
@@ -151,14 +147,14 @@ function AltManagement:HandleActionClick(entryFrame)
     if status.isMain then
         -- This is another main character, assign them as an alt to our current main
         QDKP2_MakeAlt(status.name, self.mainCharacter, true)
-        QDKP2_Msg(status.name .. " has been assigned as an alt of " .. self.mainCharacter .. ". Remember to |cffff0000Send Changes|r to save.", "INFO")
+        QDKP2_Msg(status.name .. " is now an alt of " .. self.mainCharacter .. ". Remember to |cffff0000Send Changes|r to save.", "INFO")
     elseif status.isAlt and status.main == self.mainCharacter then
         -- This is already an alt of our main, remove them
         QDKP2_ClearAlt(status.name)
         QDKP2_Msg(status.name .. " is no longer an alt of " .. self.mainCharacter .. ". Remember to |cffff0000Send Changes|r to save.", "INFO")
     end
     
-    -- Rebuild and refresh the entire list to reflect the change
+    -- Rebuild and refresh the entire list to reflect the change, keeping the filter
     self:BuildAndDisplayList()
 end
 
