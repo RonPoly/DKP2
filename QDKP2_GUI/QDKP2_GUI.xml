@@ -2881,32 +2881,32 @@
       </OnLoad>
     </Scripts>
   </Frame>
-  <Button name="QDKP2_AltManagement_EntryTemplate" virtual="true">
-    <Size x="280" y="16"/>
+  <Frame name="QDKP2_AltManagement_EntryTemplate" virtual="true">
+    <Size x="280" y="18"/>
     <Layers>
       <Layer level="ARTWORK">
-        <FontString name="$parent_Name" inherits="GameFontHighlight" justifyH="LEFT"/>
+        <FontString name="$parent_Name" inherits="GameFontNormalSmall" justifyH="LEFT"/>
         <FontString name="$parent_Status" inherits="GameFontNormalSmall" justifyH="RIGHT"/>
       </Layer>
     </Layers>
+    <Frames>
+        <Button name="$parent_ActionButton" inherits="UIPanelButtonTemplate">
+            <Size x="70" y="16"/>
+            <Anchors>
+                <Anchor point="RIGHT" x="-5" y="0"/>
+            </Anchors>
+            <Scripts>
+                <OnClick>
+                    QDKP2GUI_AltManagement:HandleActionClick(self:GetParent());
+                </OnClick>
+            </Scripts>
+        </Button>
+    </Frames>
     <HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD"/>
-    <Scripts>
-      <OnClick>
-        QDKP2GUI_AltManagement:AssignAlt(self.characterName);
-      </OnClick>
-      <OnEnter>
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-        GameTooltip:SetText("Assign " .. self.characterName .. " as an alt.");
-        GameTooltip:Show();
-      </OnEnter>
-      <OnLeave>
-        GameTooltip:Hide();
-      </OnLeave>
-    </Scripts>
-  </Button>
+  </Frame>
 
   <Frame name="QDKP2_AltManagementFrame" inherits="QDKP2DialogTitled" hidden="true">
-    <Size x="350" y="450" />
+    <Size x="400" y="500" />
     <Anchors>
       <Anchor point="CENTER" />
     </Anchors>
@@ -2950,89 +2950,52 @@
         </Anchors>
         <Scripts>
           <OnTextChanged>
-            QDKP2GUI_AltManagement:OnSearchTextChanged()
-          </OnTextChanged>
-          <OnEnterPressed>
-            self:ClearFocus();
-          </OnEnterPressed>
-        </Scripts>
+        QDKP2GUI_AltManagement:BuildAndDisplayList()
+      </OnTextChanged>
+  <OnEnterPressed>
+        self:ClearFocus();
+      </OnEnterPressed>
+    </Scripts>
       </EditBox>
       <Frame name="$parent_ListContainer">
-        <Size x="280" y="310"/>
+        <Size x="350" y="360"/>
         <Anchors>
           <Anchor point="TOP" relativeTo="$parent_SearchBox" relativePoint="BOTTOM">
             <Offset x="0" y="-10"/>
           </Anchor>
         </Anchors>
         <Frames>
-          <Button name="$parent_Entry1" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT"/></Anchors>
-          </Button>
-          <Button name="$parent_Entry2" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry1" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry3" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry2" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry4" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry3" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry5" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry4" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry6" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry5" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry7" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry6" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry8" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry7" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry9" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry8" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry10" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry9" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry11" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry10" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry12" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry11" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry13" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry12" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry14" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry13" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-          <Button name="$parent_Entry15" inherits="QDKP2_AltManagement_EntryTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry14" relativePoint="BOTTOMLEFT" /></Anchors>
-          </Button>
-        </Frames>
+            </Frames>
       </Frame>
       <ScrollFrame name="$parent_ScrollFrame" inherits="FauxScrollFrameTemplate">
         <Anchors>
           <Anchor point="TOPRIGHT" relativeTo="$parent_ListContainer" relativePoint="TOPRIGHT">
-            <Offset><AbsDimension x="25" y="-2"/></Offset>
-          </Anchor>
+    <Offset x="25" y="-2"/>
+  </Anchor>
           <Anchor point="BOTTOMRIGHT" relativeTo="$parent_ListContainer" relativePoint="BOTTOMRIGHT">
-            <Offset><AbsDimension x="25" y="2"/></Offset>
-          </Anchor>
+    <Offset x="25" y="2"/>
+  </Anchor>
         </Anchors>
-        <Scripts>
-          <OnVerticalScroll>
-            FauxScrollFrame_OnVerticalScroll(self, offset, 16, QDKP2GUI_AltManagement.UpdateCharacterList);
-          </OnVerticalScroll>
-        </Scripts>
+<Scripts>
+  <OnVerticalScroll>
+    FauxScrollFrame_OnVerticalScroll(self, offset, 18, QDKP2GUI_AltManagement.PopulateVisibleList);
+  </OnVerticalScroll>
+</Scripts>
       </ScrollFrame>
     </Frames>
-    <Scripts>
-      <OnLoad>
-        QDKP2GUI_AltManagement.Frame = self;
-      </OnLoad>
-    </Scripts>
+<Scripts>
+<OnLoad>
+QDKP2GUI_AltManagement.Frame = self;
+for i=1, 18 do
+local entry = CreateFrame("Frame", "$parent_ListContainer_Entry" .. i, self:GetParent().ListContainer, "QDKP2_AltManagement_EntryTemplate")
+if i == 1 then
+entry:SetPoint("TOPLEFT", 10, 0);
+else
+entry:SetPoint("TOPLEFT", _G["QDKP2_AltManagementFrame_ListContainer_Entry" .. (i-1)], "BOTTOMLEFT", 0, -2);
+end
+end
+</OnLoad>
+</Scripts>
   </Frame>
 </Ui>
 
