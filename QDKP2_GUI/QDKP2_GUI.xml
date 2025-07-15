@@ -2881,21 +2881,48 @@
       </OnLoad>
     </Scripts>
   </Frame>
+  <Button name="QDKP2_AltManagement_EntryTemplate" virtual="true">
+    <Size x="280" y="16"/>
+    <Layers>
+      <Layer level="ARTWORK">
+        <FontString name="$parent_Name" inherits="GameFontHighlight" justifyH="LEFT"/>
+        <FontString name="$parent_Status" inherits="GameFontNormalSmall" justifyH="RIGHT"/>
+      </Layer>
+    </Layers>
+    <HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD"/>
+    <Scripts>
+      <OnClick>
+        QDKP2GUI_AltManagement:AssignAlt(self.characterName);
+      </OnClick>
+      <OnEnter>
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+        GameTooltip:SetText("Assign " .. self.characterName .. " as an alt.");
+        GameTooltip:Show();
+      </OnEnter>
+      <OnLeave>
+        GameTooltip:Hide();
+      </OnLeave>
+    </Scripts>
+  </Button>
+
   <Frame name="QDKP2_AltManagementFrame" inherits="QDKP2DialogTitled" hidden="true">
-    <Size>
-      <AbsDimension x="350" y="400" />
-    </Size>
+    <Size x="350" y="450" />
     <Anchors>
       <Anchor point="CENTER" />
     </Anchors>
     <Layers>
       <Layer level="ARTWORK">
-        <FontString name="$parent_Header" inherits="GameFontNormalLarge" text="Assign Alts">
+        <FontString name="$parent_Header" inherits="GameFontNormalLarge" text="ALT MANAGEMENT">
           <Anchors>
             <Anchor point="TOP" relativePoint="TOP">
-              <Offset>
-                <AbsDimension x="0" y="-12" />
-              </Offset>
+              <Offset x="0" y="-12" />
+            </Anchor>
+          </Anchors>
+        </FontString>
+        <FontString name="$parent_SubHeader" inherits="GameFontNormal">
+          <Anchors>
+            <Anchor point="TOP" relativeTo="$parent_Header" relativePoint="BOTTOM">
+              <Offset x="0" y="-4" />
             </Anchor>
           </Anchors>
         </FontString>
@@ -2905,9 +2932,7 @@
       <Button name="$parent_CloseButton" inherits="UIPanelCloseButton">
         <Anchors>
           <Anchor point="TOPRIGHT">
-            <Offset>
-              <AbsDimension x="-4" y="-4" />
-            </Offset>
+            <Offset x="-4" y="-4" />
           </Anchor>
         </Anchors>
         <Scripts>
@@ -2916,242 +2941,98 @@
           </OnClick>
         </Scripts>
       </Button>
-      <EditBox name="$parent_SearchBox" inherits="InputBoxTemplate">
-        <Size>
-          <AbsDimension x="200" y="25" />
-        </Size>
+      <EditBox name="$parent_SearchBox" inherits="InputBoxTemplate" autoFocus="false">
+        <Size x="200" y="25" />
         <Anchors>
-          <Anchor point="TOP" relativePoint="TOP">
-            <Offset>
-              <AbsDimension x="0" y="-40" />
-            </Offset>
+          <Anchor point="TOP" relativeTo="$parent_SubHeader" relativePoint="BOTTOM">
+            <Offset x="0" y="-10" />
           </Anchor>
         </Anchors>
         <Scripts>
           <OnTextChanged>
             QDKP2GUI_AltManagement:OnSearchTextChanged()
           </OnTextChanged>
+          <OnEnterPressed>
+            self:ClearFocus();
+          </OnEnterPressed>
         </Scripts>
       </EditBox>
+      <Frame name="$parent_ListContainer">
+        <Size x="280" y="310"/>
+        <Anchors>
+          <Anchor point="TOP" relativeTo="$parent_SearchBox" relativePoint="BOTTOM">
+            <Offset x="0" y="-10"/>
+          </Anchor>
+        </Anchors>
+        <Frames>
+          <Button name="$parent_Entry1" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT"/></Anchors>
+          </Button>
+          <Button name="$parent_Entry2" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry1" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry3" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry2" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry4" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry3" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry5" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry4" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry6" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry5" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry7" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry6" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry8" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry7" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry9" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry8" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry10" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry9" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry11" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry10" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry12" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry11" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry13" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry12" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry14" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry13" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+          <Button name="$parent_Entry15" inherits="QDKP2_AltManagement_EntryTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="$parent_Entry14" relativePoint="BOTTOMLEFT" /></Anchors>
+          </Button>
+        </Frames>
+      </Frame>
       <ScrollFrame name="$parent_ScrollFrame" inherits="FauxScrollFrameTemplate">
         <Anchors>
-          <Anchor point="TOPLEFT">
-            <Offset>
-              <AbsDimension x="20" y="-70" />
-            </Offset>
+          <Anchor point="TOPRIGHT" relativeTo="$parent_ListContainer" relativePoint="TOPRIGHT">
+            <Offset><AbsDimension x="25" y="-2"/></Offset>
           </Anchor>
-          <Anchor point="BOTTOMRIGHT">
-            <Offset>
-              <AbsDimension x="-35" y="20" />
-            </Offset>
+          <Anchor point="BOTTOMRIGHT" relativeTo="$parent_ListContainer" relativePoint="BOTTOMRIGHT">
+            <Offset><AbsDimension x="25" y="2"/></Offset>
           </Anchor>
         </Anchors>
+        <Scripts>
+          <OnVerticalScroll>
+            FauxScrollFrame_OnVerticalScroll(self, offset, 16, QDKP2GUI_AltManagement.UpdateCharacterList);
+          </OnVerticalScroll>
+        </Scripts>
       </ScrollFrame>
-      <Button name="$parent_Entry1" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_ScrollFrame">
-            <Offset>
-              <AbsDimension x="0" y="0" />
-            </Offset>
-          </Anchor>
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry2" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry1" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry3" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry2" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry4" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry3" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry5" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry4" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry6" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry5" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry7" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry6" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry8" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry7" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry9" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry8" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry10" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry9" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry11" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry10" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry12" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry11" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry13" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry12" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry14" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry13" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry15" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry14" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry16" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry15" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry17" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry16" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry18" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry17" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry19" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry18" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
-      <Button name="$parent_Entry20" inherits="QDKP2_frame2_entry_template">
-        <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parent_Entry19" relativePoint="BOTTOMLEFT" />
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:AssignAlt(self.characterName)
-          </OnClick>
-        </Scripts>
-      </Button>
     </Frames>
+    <Scripts>
+      <OnLoad>
+        QDKP2GUI_AltManagement.Frame = self;
+      </OnLoad>
+    </Scripts>
   </Frame>
 </Ui>
 

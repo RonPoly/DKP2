@@ -6,63 +6,88 @@
 --
 
 local AltManagement = {}
+AltManagement.ENTRIES_PER_PAGE = 15
 
 function AltManagement:Show(mainCharacter)
-  self.mainCharacter = mainCharacter
-  QDKP2_AltManagementFrame:Show()
-  self:UpdateCharacterList()
+    self.mainCharacter = mainCharacter
+    if not self.mainCharacter then return end
+
+    self.Frame:Show()
+    QDKP2_AltManagementFrame_SubHeader:SetText("Assigning alts for: " .. self.mainCharacter)
+    self:UpdateCharacterList()
 end
 
 function AltManagement:Hide()
-  QDKP2_AltManagementFrame:Hide()
-end
-
-function AltManagement:UpdateCharacterList(filter)
-  local scrollFrame = QDKP2_AltManagementFrame_ScrollFrame
-  local characterList = {}
-
-  -- Populate characterList with all characters in the guild
-  for i = 1, GetNumGuildMembers(true) do
-    local name, _, _, _, _, _, _, _, _, online = QDKP2_GetGuildRosterInfo(i)
-    if name and name ~= self.mainCharacter then
-      if not filter or string.find(string.lower(name), string.lower(filter)) then
-        table.insert(characterList, {name = name, online = online})
-      end
-    end
-  end
-
-  -- Sort the list alphabetically
-  table.sort(characterList, function(a, b) return a.name < b.name end)
-
-  -- Clear existing entries
-  for i = 1, 20 do
-    local entry = _G["QDKP2_AltManagementFrame_Entry"..i]
-    entry:Hide()
-  end
-
-  -- Populate the list
-  for i, char in ipairs(characterList) do
-    if i > 20 then break end
-    local entry = _G["QDKP2_AltManagementFrame_Entry"..i]
-    entry.characterName = char.name
-    _G[entry:GetName().."_Name"]:SetText(char.name)
-    if char.online then
-      _G[entry:GetName().."_Name"]:SetTextColor(1, 1, 1)
-    else
-      _G[entry:GetName().."_Name"]:SetTextColor(0.5, 0.5, 0.5)
-    end
-    entry:Show()
-  end
+    self.Frame:Hide()
+    QDKP2_Roster_SearchBox:SetText("")
 end
 
 function AltManagement:OnSearchTextChanged()
-  self:UpdateCharacterList(QDKP2_AltManagementFrame_SearchBox:GetText())
+    self:UpdateCharacterList()
+end
+
+function AltManagement:UpdateCharacterList()
+    local scrollFrame = QDKP2_AltManagementFrame_ScrollFrame
+    local filter = QDKP2_AltManagementFrame_SearchBox:GetText()
+    
+    if not self.fullCharacterList then
+        self.fullCharacterList = {}
+        for i = 1, QDKP2_GetNumGuildMembers(true) do
+            local name = QDKP2_GetGuildRosterInfo(i)
+            table.insert(self.fullCharacterList, name)
+        end
+    end
+
+    self.displayList = {}
+    for _, name in ipairs(self.fullCharacterList) do
+        -- A character is eligible to be an alt if:
+        -- 1. It's not the main character itself.
+        -- 2. It's not already an alt of SOMEONE ELSE.
+        -- 3. It passes the search filter (if any).
+        if name and name ~= self.mainCharacter and not QDKP2alts[name] then
+            if not filter or filter == "" or string.find(string.lower(name), string.lower(filter)) then
+                table.insert(self.displayList, name)
+            end
+        end
+    end
+    
+    table.sort(self.displayList)
+    
+    local offset = FauxScrollFrame_GetOffset(scrollFrame)
+    
+    for i = 1, self.ENTRIES_PER_PAGE do
+        local entry = _G["QDKP2_AltManagementFrame_ListContainer_Entry"..i]
+        local charIndex = i + offset
+        
+        if self.displayList[charIndex] then
+            local charName = self.displayList[charIndex]
+            local online = QDKP2online[charName]
+            entry.characterName = charName
+            _G[entry:GetName().."_Name"]:SetText(charName)
+            
+            local statusText = _G[entry:GetName().."_Status"]
+            if online then
+                statusText:SetText("|cff00ff00Online|r")
+            else
+                statusText:SetText("|cff808080Offline|r")
+            end
+            
+            entry:Show()
+        else
+            entry:Hide()
+        end
+    end
+    
+    FauxScrollFrame_Update(scrollFrame, #self.displayList, self.ENTRIES_PER_PAGE, 16)
 end
 
 function AltManagement:AssignAlt(altName)
-  if self.mainCharacter and altName then
-    QDKP2_MakeAlt(altName, self.mainCharacter, true)
-  end
+    if self.mainCharacter and altName then
+        QDKP2_MakeAlt(altName, self.mainCharacter, true)
+        QDKP2_Msg(altName .. " has been assigned as an alt of " .. self.mainCharacter .. ". Remember to |cffff0000Send Changes|r to save.", "INFO")
+        self:UpdateCharacterList() -- Refresh the list to remove the newly assigned alt
+    end
 end
 
+-- Initialize the class object
 QDKP2GUI_AltManagement = AltManagement
