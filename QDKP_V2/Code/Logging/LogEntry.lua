@@ -465,9 +465,10 @@ end
 
 local LogColors={}
 LogColors.Default={r=1,g=1,b=1}
-LogColors.NegativeDKP={r=1,g=0.3,b=0.3}
-LogColors.PositiveDKP={r=0,g=1,b=0}
-LogColors.LostDKP={r=0.6,g=0.6,b=0.6}
+LogColors.PositiveDKP={r=0.1,g=1,b=0.1}
+LogColors.NegativeDKP={r=1,g=0.1,b=0.1}
+LogColors.LostDKP={r=1,g=0.5,b=0}
+LogColors.System={r=0.5,g=0.7,b=1.0} -- Added for system messages
 LogColors[QDKP2LOG_EVENT]={r=1,g=1,b=1}
 LogColors[QDKP2LOG_CONFIRMED]={r=0.3,g=1,b=0.3}
 LogColors[QDKP2LOG_CRITICAL]={r=1,g=0.3,b=0.3}
@@ -997,25 +998,25 @@ function QDKP2log_GetStr(Log)
     undo=string.gsub(undo,'nil','')
   else undo=''
   end
-  if reason then reason=string.gsub(reason,"ง","S")
+  if reason then reason=string.gsub(reason,"ยง","S")
   else reason=''
   end
-  local out=tostring(Log[1] or '')..'ง'..
-            tostring(Log[2] or '')..'ง'..
-            reason..'ง'..
-            tostring(Log[4] or '')..'ง'..
-            undo..'ง'..
-            tostring(Log[6] or '')..'ง'..
-            tostring(Log[7] or '')..'ง'..
-            flags..'ง'..
-            tostring(Log[9] or '')..'ง'..
+  local out=tostring(Log[1] or '')..'ยง'..
+            tostring(Log[2] or '')..'ยง'..
+            reason..'ยง'..
+            tostring(Log[4] or '')..'ยง'..
+            undo..'ยง'..
+            tostring(Log[6] or '')..'ยง'..
+            tostring(Log[7] or '')..'ยง'..
+            flags..'ยง'..
+            tostring(Log[9] or '')..'ยง'..
             tostring(Log[10] or '')
   return out
 end
 
 function QDKP2log_GetLogFromString(str)
   local _,_,Type,TS,Act,Ver,UndoS,ModBy,ModDate,Flags,Own,Sign=string.find(
-  '([^ง]*)ง([^ง]*)ง([^ง]*)ง([^ง]*)ง([^ง]*)ง([^ง]*)ง([^ง]*)ง([^ง]*)ง([^ง]*)ง([^ง]*)')
+  '([^ยง]*)ยง([^ยง]*)ยง([^ยง]*)ยง([^ยง]*)ยง([^ยง]*)ยง([^ยง]*)ยง([^ยง]*)ยง([^ยง]*)ยง([^ยง]*)ยง([^ยง]*)')
   Type=tonumber(Type) or QDKP2LOG_INVALID
   TS=tonumber(TS)
   Ver=tonumber(Ver)
