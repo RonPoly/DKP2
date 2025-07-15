@@ -6,87 +6,148 @@
 --
 
 local AltManagement = {}
-AltManagement.ENTRIES_PER_PAGE = 15
+AltManagement.ENTRIES_PER_PAGE = 18
+AltManagement.listData = {} -- This will hold the structured list of mains and alts
 
 function AltManagement:Show(mainCharacter)
     self.mainCharacter = mainCharacter
     if not self.mainCharacter then return end
 
     self.Frame:Show()
-    QDKP2_AltManagementFrame_SubHeader:SetText("Assigning alts for: " .. self.mainCharacter)
-    self:UpdateCharacterList()
+    QDKP2_AltManagementFrame_SubHeader:SetText("Managing alts for: |cffffd100" .. self.mainCharacter .. "|r")
+    QDKP2_AltManagementFrame_SearchBox:SetText("")
+    self:BuildAndDisplayList()
 end
 
 function AltManagement:Hide()
     self.Frame:Hide()
-    QDKP2_Roster_SearchBox:SetText("")
 end
 
-function AltManagement:OnSearchTextChanged()
-    self:UpdateCharacterList()
-end
-
-function AltManagement:UpdateCharacterList()
-    local scrollFrame = QDKP2_AltManagementFrame_ScrollFrame
+function AltManagement:BuildAndDisplayList()
     local filter = QDKP2_AltManagementFrame_SearchBox:GetText()
+    filter = (filter and filter ~= "") and string.lower(filter) or nil
     
-    if not self.fullCharacterList then
-        self.fullCharacterList = {}
-        for i = 1, QDKP2_GetNumGuildMembers(true) do
-            local name = QDKP2_GetGuildRosterInfo(i)
-            table.insert(self.fullCharacterList, name)
-        end
-    end
+    wipe(self.listData)
 
-    self.displayList = {}
-    for _, name in ipairs(self.fullCharacterList) do
-        -- A character is eligible to be an alt if:
-        -- 1. It's not the main character itself.
-        -- 2. It's not already an alt of SOMEONE ELSE.
-        -- 3. It passes the search filter (if any).
-        if name and name ~= self.mainCharacter and not QDKP2alts[name] then
-            if not filter or filter == "" or string.find(string.lower(name), string.lower(filter)) then
-                table.insert(self.displayList, name)
+    -- Create a temporary structure to hold mains and their alts
+    local mains = {}
+    for i = 1, QDKP2_GetNumGuildMembers(true) do
+        local name = QDKP2_GetGuildRosterInfo(i)
+        if name then
+            local mainName = QDKP2_GetMain(name)
+            if not mains[mainName] then
+                mains[mainName] = { alts = {} }
+            end
+            if mainName ~= name then
+                table.insert(mains[mainName].alts, name)
             end
         end
     end
     
-    table.sort(self.displayList)
+    -- Now build the flat display list from the structured data
+    local sortedMains = {}
+    for name, _ in pairs(mains) do
+        table.insert(sortedMains, name)
+    end
+    table.sort(sortedMains)
+
+    for _, name in ipairs(sortedMains) do
+        local data = mains[name]
+        local isMainCharacter = (name == self.mainCharacter)
+        
+        -- Filter logic
+        local mainMatches = filter and string.find(string.lower(name), filter)
+        local altMatches = false
+        if filter then
+            for _, altName in ipairs(data.alts) do
+                if string.find(string.lower(altName), filter) then
+                    altMatches = true
+                    break
+                end
+            end
+        end
+        
+        if not filter or mainMatches or altMatches then
+            -- Add the main character to the list
+            table.insert(self.listData, { name = name, indent = 0, isMain = true, isCurrentMain = isMainCharacter })
+            
+            -- Add their existing alts
+            table.sort(data.alts)
+            for _, altName in ipairs(data.alts) do
+                table.insert(self.listData, { name = altName, indent = 15, isAlt = true, main = name })
+            end
+        end
+    end
     
+    self:PopulateVisibleList()
+end
+
+function AltManagement:PopulateVisibleList()
+    local scrollFrame = QDKP2_AltManagementFrame_ScrollFrame
     local offset = FauxScrollFrame_GetOffset(scrollFrame)
     
     for i = 1, self.ENTRIES_PER_PAGE do
-        local entry = _G["QDKP2_AltManagementFrame_ListContainer_Entry"..i]
-        local charIndex = i + offset
+        local entryFrame = _G["QDKP2_AltManagementFrame_ListContainer_Entry"..i]
+        local dataIndex = i + offset
+        local data = self.listData[dataIndex]
         
-        if self.displayList[charIndex] then
-            local charName = self.displayList[charIndex]
-            local online = QDKP2online[charName]
-            entry.characterName = charName
-            _G[entry:GetName().."_Name"]:SetText(charName)
+        if data then
+            entryFrame.characterName = data.name
+            entryFrame.characterStatus = data
             
-            local statusText = _G[entry:GetName().."_Status"]
-            if online then
-                statusText:SetText("|cff00ff00Online|r")
-            else
-                statusText:SetText("|cff808080Offline|r")
+            local nameLabel = _G[entryFrame:GetName().."_Name"]
+            local statusLabel = _G[entryFrame:GetName().."_Status"]
+            local actionButton = _G[entryFrame:GetName().."_ActionButton"]
+            
+            nameLabel:SetPoint("LEFT", data.indent, 0)
+            nameLabel:SetText(data.name)
+            
+            -- Set colors and status text
+            if data.isCurrentMain then
+                nameLabel:SetTextColor(1, 0.82, 0)
+                statusLabel:SetText("|cffffd100(Main)|r")
+                actionButton:Hide()
+            elseif data.isMain then
+                nameLabel:SetTextColor(1, 1, 1)
+                statusLabel:SetText("")
+                actionButton:SetText("Assign")
+                actionButton:Show()
+            elseif data.isAlt then
+                nameLabel:SetTextColor(0.8, 0.8, 0.8)
+                statusLabel:SetText("|cffaaaaaa(Alt of " .. data.main .. ")|r")
+                if data.main == self.mainCharacter then
+                    actionButton:SetText("Remove")
+                    actionButton:Show()
+                else
+                    actionButton:Hide()
+                end
             end
             
-            entry:Show()
+            entryFrame:Show()
         else
-            entry:Hide()
+            entryFrame:Hide()
         end
     end
     
-    FauxScrollFrame_Update(scrollFrame, #self.displayList, self.ENTRIES_PER_PAGE, 16)
+    FauxScrollFrame_Update(scrollFrame, #self.listData, self.ENTRIES_PER_PAGE, 18)
 end
 
-function AltManagement:AssignAlt(altName)
-    if self.mainCharacter and altName then
-        QDKP2_MakeAlt(altName, self.mainCharacter, true)
-        QDKP2_Msg(altName .. " has been assigned as an alt of " .. self.mainCharacter .. ". Remember to |cffff0000Send Changes|r to save.", "INFO")
-        self:UpdateCharacterList() -- Refresh the list to remove the newly assigned alt
+function AltManagement:HandleActionClick(entryFrame)
+    local status = entryFrame.characterStatus
+    if not status then return end
+
+    if status.isMain then
+        -- This is another main character, assign them as an alt to our current main
+        QDKP2_MakeAlt(status.name, self.mainCharacter, true)
+        QDKP2_Msg(status.name .. " has been assigned as an alt of " .. self.mainCharacter .. ". Remember to |cffff0000Send Changes|r to save.", "INFO")
+    elseif status.isAlt and status.main == self.mainCharacter then
+        -- This is already an alt of our main, remove them
+        QDKP2_ClearAlt(status.name)
+        QDKP2_Msg(status.name .. " is no longer an alt of " .. self.mainCharacter .. ". Remember to |cffff0000Send Changes|r to save.", "INFO")
     end
+    
+    -- Rebuild and refresh the entire list to reflect the change
+    self:BuildAndDisplayList()
 end
 
 -- Initialize the class object
