@@ -2882,7 +2882,7 @@
     </Scripts>
   </Frame>
   <Frame name="QDKP2_AltManagement_EntryTemplate" virtual="true">
-    <Size x="350" y="18"/>
+    <Size x="400" y="18"/>
     <Layers>
       <Layer level="ARTWORK">
         <FontString name="$parent_Name" inherits="GameFontNormalSmall" justifyH="LEFT">
@@ -2898,18 +2898,18 @@
       </Layer>
     </Layers>
     <Frames>
-        <Button name="$parent_ActionButton" inherits="UIPanelButtonTemplate">
-            <Size x="70" y="16"/>
-            <Anchors>
-                <Anchor point="RIGHT" x="-5" y="0"/>
-            </Anchors>
-            <Scripts>
-                <OnClick>
-                    QDKP2GUI_AltManagement:HandleActionClick(self:GetParent());
-                </OnClick>
-            </Scripts>
-        </Button>
-    </Frames>
+<Button name="$parent_ActionButton" inherits="UIPanelButtonTemplate">
+<Size x="70" y="16"/>
+<Anchors>
+<Anchor point="RIGHT" x="-5" y="0"/>
+</Anchors>
+<Scripts>
+<OnClick>
+QDKP2GUI_AltManagement:HandleActionClick(self:GetParent());
+</OnClick>
+</Scripts>
+</Button>
+</Frames>
     <HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD"/>
   </Frame>
 
@@ -2918,86 +2918,55 @@
     <Anchors>
       <Anchor point="CENTER" />
     </Anchors>
-    <Layers>
-      <Layer level="ARTWORK">
-        <FontString name="$parent_Header" inherits="GameFontNormalLarge" text="ALT MANAGEMENT">
-          <Anchors>
-            <Anchor point="TOP" relativePoint="TOP">
-              <Offset x="0" y="-12" />
-            </Anchor>
-          </Anchors>
-        </FontString>
-        <FontString name="$parent_SubHeader" inherits="GameFontNormal">
-          <Anchors>
-            <Anchor point="TOP" relativeTo="$parent_Header" relativePoint="BOTTOM">
-              <Offset x="0" y="-4" />
-            </Anchor>
-          </Anchors>
-        </FontString>
-      </Layer>
-    </Layers>
     <Frames>
       <Button name="$parent_CloseButton" inherits="UIPanelCloseButton">
-        <Anchors>
-          <Anchor point="TOPRIGHT">
-            <Offset x="-4" y="-4" />
-          </Anchor>
-        </Anchors>
-        <Scripts>
-          <OnClick>
-            QDKP2GUI_AltManagement:Hide()
-          </OnClick>
-        </Scripts>
+        <Anchors><Anchor point="TOPRIGHT" x="-4" y="-4" /></Anchors>
+        <Scripts><OnClick>QDKP2GUI_AltManagement:Hide()</OnClick></Scripts>
       </Button>
       <EditBox name="$parent_SearchBox" inherits="InputBoxTemplate" autoFocus="false">
         <Size x="200" y="25" />
-        <Anchors>
-          <Anchor point="TOP" relativeTo="$parent_SubHeader" relativePoint="BOTTOM">
-            <Offset x="0" y="-10" />
-          </Anchor>
-        </Anchors>
+        <Anchors><Anchor point="TOP" y="-40" /></Anchors>
         <Scripts>
-          <OnTextChanged>
-            QDKP2GUI_AltManagement:BuildAndDisplayList()
-          </OnTextChanged>
-          <OnEnterPressed>
-            self:ClearFocus();
-          </OnEnterPressed>
+          <OnTextChanged>QDKP2GUI_AltManagement:BuildAndDisplayList()</OnTextChanged>
+  <OnEnterPressed>self:ClearFocus();</OnEnterPressed>
         </Scripts>
       </EditBox>
       <ScrollFrame name="$parent_ScrollFrame" inherits="FauxScrollFrameTemplate">
-        <Size x="380" y="360"/>
-        <Anchors>
-          <Anchor point="TOP" relativeTo="$parent_SearchBox" relativePoint="BOTTOM">
-            <Offset x="0" y="-10"/>
-          </Anchor>
-        </Anchors>
+        <Size x="420" y="400"/>
+        <Anchors><Anchor point="TOP" relativeTo="$parent_SearchBox" relativePoint="BOTTOM" x="0" y="-10"/></Anchors>
         <Scripts>
-          <OnVerticalScroll>
-            FauxScrollFrame_OnVerticalScroll(self, offset, 18, QDKP2GUI_AltManagement.PopulateVisibleList);
-          </OnVerticalScroll>
+            <OnVerticalScroll>
+                FauxScrollFrame_OnVerticalScroll(self, offset, 18, QDKP2GUI_AltManagement.PopulateVisibleList);
+            </OnVerticalScroll>
         </Scripts>
       </ScrollFrame>
     </Frames>
-    <Scripts>
-      <OnLoad>
-        QDKP2GUI_AltManagement.Frame = self;
-        self.scrollChild = CreateFrame("Frame", nil, self);
-        self.scrollChild:SetSize(380, 360);
-        QDKP2_AltManagementFrame_ScrollFrame:SetScrollChild(self.scrollChild);
-        
-        for i=1, 20 do
-          local entry = CreateFrame("Frame", nil, self.scrollChild, "QDKP2_AltManagement_EntryTemplate")
-          entry:SetID(i)
-          if i == 1 then
-            entry:SetPoint("TOPLEFT", 10, 0);
-          else
-            entry:SetPoint("TOPLEFT", _G["QDKP2_AltManagementFrame_ListContainer_Entry" .. (i-1)], "BOTTOMLEFT", 0, -2);
-          end
-          _G["QDKP2_AltManagementFrame_ListContainer_Entry" .. i] = entry
-        end
-      </OnLoad>
-    </Scripts>
+<Scripts>
+<OnLoad>
+            -- Store a reference to the main frame and create a table for our list entries
+QDKP2GUI_AltManagement.Frame = self;
+            QDKP2GUI_AltManagement.entries = {};
+
+            -- Create the scrollable container
+            self.scrollChild = CreateFrame("Frame", nil, self.ScrollFrame);
+            self.scrollChild:SetSize(420, 400);
+            self.ScrollFrame:SetScrollChild(self.scrollChild);
+
+            -- Create and correctly parent the list entries
+            local previousEntry;
+            for i=1, 22 do
+                local entry = CreateFrame("Frame", nil, self.scrollChild, "QDKP2_AltManagement_EntryTemplate");
+                entry:SetID(i);
+                if i == 1 then
+                    entry:SetPoint("TOPLEFT", 5, -5);
+                else
+                    entry:SetPoint("TOPLEFT", previousEntry, "BOTTOMLEFT", 0, -2);
+                end
+                previousEntry = entry;
+                QDKP2GUI_AltManagement.entries[i] = entry; -- Store for Lua to use
+            end
+</OnLoad>
+</Scripts>
   </Frame>
 
 
