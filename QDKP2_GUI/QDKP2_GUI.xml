@@ -2965,21 +2965,11 @@
           </OnEnterPressed>
         </Scripts>
       </EditBox>
-      <Frame name="$parent_ListContainer">
-        <Size x="400" y="360"/>
-        <Anchors>
-            <Anchor point="TOP" relativeTo="$parent_SearchBox" relativePoint="BOTTOM">
-                <Offset x="0" y="-10"/>
-            </Anchor>
-        </Anchors>
-      </Frame>
       <ScrollFrame name="$parent_ScrollFrame" inherits="FauxScrollFrameTemplate">
+        <Size x="380" y="360"/>
         <Anchors>
-          <Anchor point="TOPRIGHT" relativeTo="$parent_ListContainer" relativePoint="TOPRIGHT">
-            <Offset x="25" y="-2"/>
-          </Anchor>
-          <Anchor point="BOTTOMRIGHT" relativeTo="$parent_ListContainer" relativePoint="BOTTOMRIGHT">
-            <Offset x="25" y="2"/>
+          <Anchor point="TOP" relativeTo="$parent_SearchBox" relativePoint="BOTTOM">
+            <Offset x="0" y="-10"/>
           </Anchor>
         </Anchors>
         <Scripts>
@@ -2992,18 +2982,24 @@
     <Scripts>
       <OnLoad>
         QDKP2GUI_AltManagement.Frame = self;
-        for i=1, 20 do -- Increased to 20 entries
-          local entry = CreateFrame("Frame", self:GetName() .. "_ListContainer_Entry" .. i, self.ListContainer, "QDKP2_AltManagement_EntryTemplate")
+        self.scrollChild = CreateFrame("Frame", nil, self);
+        self.scrollChild:SetSize(380, 360);
+        QDKP2_AltManagementFrame_ScrollFrame:SetScrollChild(self.scrollChild);
+        
+        for i=1, 20 do
+          local entry = CreateFrame("Frame", nil, self.scrollChild, "QDKP2_AltManagement_EntryTemplate")
+          entry:SetID(i)
           if i == 1 then
             entry:SetPoint("TOPLEFT", 10, 0);
           else
-            entry:SetPoint("TOPLEFT", _G[self:GetName() .. "_ListContainer_Entry" .. (i-1)], "BOTTOMLEFT", 0, -2);
+            entry:SetPoint("TOPLEFT", _G["QDKP2_AltManagementFrame_ListContainer_Entry" .. (i-1)], "BOTTOMLEFT", 0, -2);
           end
+          _G["QDKP2_AltManagementFrame_ListContainer_Entry" .. i] = entry
         end
       </OnLoad>
     </Scripts>
-      </Frame>
+  </Frame>
+
+
+
 </Ui>
-
-
-
