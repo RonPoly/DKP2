@@ -463,29 +463,21 @@ function QDKP2log_GetLastLogText(name,session)
 end
 
 
-local LogColors={}
-LogColors.Default={r=1,g=1,b=1}
-LogColors.PositiveDKP={r=0.1,g=1,b=0.1}
-LogColors.NegativeDKP={r=1,g=0.1,b=0.1}
-LogColors.LostDKP={r=1,g=0.5,b=0}
-LogColors.System={r=0.5,g=0.7,b=1.0} -- Added for system messages
-LogColors[QDKP2LOG_EVENT]={r=1,g=1,b=1}
-LogColors[QDKP2LOG_CONFIRMED]={r=0.3,g=1,b=0.3}
-LogColors[QDKP2LOG_CRITICAL]={r=1,g=0.3,b=0.3}
-LogColors[QDKP2LOG_MODIFY]={r=0.4,g=1,b=1}
-LogColors[QDKP2LOG_JOINED]={r=1,g=0.6,b=0}
-LogColors[QDKP2LOG_LEFT]={r=1,g=0.6,b=0}
-LogColors[QDKP2LOG_LOOT]={r=1,g=1,b=0}
-LogColors[QDKP2LOG_ABORTED]={r=0.6,g=0.6,b=0.6}
-LogColors[QDKP2LOG_NODKP]={r=1,g=0.5,b=0.5}
-LogColors[QDKP2LOG_BOSS]={r=1,g=1,b=1}
-LogColors[QDKP2LOG_BIDDING]={r=1,g=0.3,b=1}
-LogColors[QDKP2LOG_SESSION]={r=1,g=1,b=0.5}
-LogColors[QDKP2LOG_INVALID]={r=1,g=1,b=1}
-LogColors[QDKP2LOG_EXTERNAL]={r=1,g=1,b=1}
+-- This table defines the colors for different log entry types.
+local LogColors = {
+    Default     = {r=1, g=1, b=1},
+    PositiveDKP = {r=0.1, g=1, b=0.1},
+    NegativeDKP = {r=1, g=0.1, b=0.1},
+    LostDKP     = {r=1, g=0.5, b=0},
+    System      = {r=0.5, g=0.7, b=1.0}, -- For things like Alt assignments
+    -- You can add other log types here
+    AltMake     = {r=0.5, g=0.7, b=1.0},
+    AltClear    = {r=0.8, g=0.8, b=0.8},
+}
 
 function QDKP2log_GetEntryColor(type)
-	return (LogColors[type] or LogColors.Default)
+  local color = LogColors[type] or LogColors["System"] or LogColors.Default
+  return color
 end
 ---------------------------------- Low level Retrivers ---------------------------------------------
 
