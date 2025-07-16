@@ -6,16 +6,38 @@
 --
 
 local AltManagement = {}
-AltManagement.ENTRIES_PER_PAGE = 22 -- Increased to match new XML
-AltManagement.listData = {} -- This will hold the structured list of mains and alts
--- AltManagement.entries is created and populated by the XML OnLoad script
+AltManagement.ENTRIES_PER_PAGE = 22
+AltManagement.listData = {}
+AltManagement.entries = {}
+
+function AltManagement:OnLoad()
+    self.Frame = QDKP2_AltManagementFrame;
+
+    -- Create the scrollable container
+    self.Frame.scrollChild = CreateFrame("Frame", nil, self.Frame.ScrollFrame);
+    self.Frame.scrollChild:SetSize(420, 400);
+    self.Frame.ScrollFrame:SetScrollChild(self.Frame.scrollChild);
+
+    -- Create and parent the list entries
+    local previousEntry;
+    for i=1, self.ENTRIES_PER_PAGE do
+        local entry = CreateFrame("Frame", nil, self.Frame.scrollChild, "QDKP2_AltManagement_EntryTemplate");
+        entry:SetID(i);
+        if i == 1 then
+            entry:SetPoint("TOPLEFT", 5, -5);
+        else
+            entry:SetPoint("TOPLEFT", previousEntry, "BOTTOMLEFT", 0, -2);
+        end
+        previousEntry = entry;
+        self.entries[i] = entry;
+    end
+end
 
 function AltManagement:Show(mainCharacter)
     self.mainCharacter = mainCharacter
     if not self.mainCharacter then return end
 
     self.Frame:Show()
-    -- This line was missing, so you didn't know who you were editing!
     QDKP2_AltManagementFrame_SubHeader:SetText("Managing alts for: |cffffd100" .. self.mainCharacter .. "|r")
     QDKP2_AltManagementFrame_SearchBox:SetText("")
     QDKP2_AltManagementFrame_SearchBox:ClearFocus()
@@ -82,19 +104,18 @@ function AltManagement:BuildAndDisplayList()
 end
 
 function AltManagement:PopulateVisibleList()
-    if not self.entries then return end -- Safety check
-
     local scrollFrame = QDKP2_AltManagementFrame_ScrollFrame
     local offset = FauxScrollFrame_GetOffset(scrollFrame)
     
     for i = 1, self.ENTRIES_PER_PAGE do
-        local entryFrame = self.entries[i] -- Use the table created by the XML
+        local entryFrame = self.entries[i]
         if not entryFrame then return end
 
         local dataIndex = i + offset
         local data = self.listData[dataIndex]
         
         if data then
+            entryFrame.characterName = data.name
             entryFrame.characterStatus = data
             
             local nameLabel = _G[entryFrame:GetName().."_Name"]
@@ -115,7 +136,6 @@ function AltManagement:PopulateVisibleList()
                 actionButton:Show()
             elseif data.isAlt then
                 nameLabel:SetTextColor(0.8, 0.8, 0.8)
-                -- This check fixes the "concatenate nil" error
                 if data.main then
                     statusLabel:SetText("|cffaaaaaa(Alt of " .. data.main .. ")|r")
                 else
@@ -145,10 +165,8 @@ function AltManagement:HandleActionClick(entryFrame)
 
     if status.isMain then
         QDKP2_MakeAlt(status.name, self.mainCharacter, true)
-        QDKP2_Msg(status.name .. " is now an alt of " .. self.mainCharacter .. ". Remember to |cffff0000Send Changes|r to save.", "INFO")
     elseif status.isAlt and status.main == self.mainCharacter then
         QDKP2_ClearAlt(status.name)
-        QDKP2_Msg(status.name .. " is no longer an alt of " .. self.mainCharacter .. ". Remember to |cffff0000Send Changes|r to save.", "INFO")
     end
     
     self:BuildAndDisplayList()
