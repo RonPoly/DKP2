@@ -1,39 +1,46 @@
 local AltManagement = {}
+AltManagement.ENTRIES_PER_PAGE = 22
+AltManagement.listData = {}
 AltManagement.isInitialized = false
 
 -- This function runs once to create all the UI elements we need
 function AltManagement:Initialize()
     if self.isInitialized then return end
 
-    -- Left Panel (Current Alts)
+    local parentFrame = QDKP2_AltManagementFrame
+    
+    -- Create the Left Panel (Current Alts) UI elements
     self.currentAltEntries = {}
-    local leftParent = QDKP2_AltManagementFrame_LeftPanel
-    for i = 1, 22 do
+    local leftParent = _G[parentFrame:GetName().."_LeftPanel"]
+    local previousLeftEntry
+    for i = 1, self.ENTRIES_PER_PAGE do
         local entry = CreateFrame("Frame", nil, leftParent, "QDKP2_AltManagement_CurrentAltTemplate")
         if i == 1 then
             entry:SetPoint("TOPLEFT", 10, -30)
         else
-            entry:SetPoint("TOPLEFT", self.currentAltEntries[i-1], "BOTTOMLEFT", 0, -2)
+            entry:SetPoint("TOPLEFT", previousLeftEntry, "BOTTOMLEFT", 0, -2)
         end
+        previousLeftEntry = entry
         self.currentAltEntries[i] = entry
     end
 
-    -- Right Panel (Available Characters)
+    -- Create the Right Panel (Available Characters) UI elements
     self.availableCharEntries = {}
-    local scrollFrame = QDKP2_AltManagementFrame_RightPanel_ScrollFrame
+    local scrollFrame = _G[parentFrame:GetName().."_RightPanel_ScrollFrame"]
     local scrollChild = CreateFrame("Frame", nil, scrollFrame)
     scrollChild:SetSize(220, 380)
     scrollFrame:SetScrollChild(scrollChild)
+    self.ScrollFrame = scrollFrame -- Store reference for later
     
-    local previousEntry
-    for i = 1, 20 do
+    local previousRightEntry
+    for i = 1, self.ENTRIES_PER_PAGE do
         local entry = CreateFrame("Frame", nil, scrollChild, "QDKP2_AltManagement_AvailableAltTemplate")
         if i == 1 then
             entry:SetPoint("TOPLEFT", 5, -5)
         else
-            entry:SetPoint("TOPLEFT", previousEntry, "BOTTOMLEFT", 0, -2)
+            entry:SetPoint("TOPLEFT", previousRightEntry, "BOTTOMLEFT", 0, -2)
         end
-        previousEntry = entry
+        previousRightEntry = entry
         self.availableCharEntries[i] = entry
     end
     
@@ -47,8 +54,10 @@ function AltManagement:Show(mainCharacter)
     if not self.mainCharacter then return end
 
     QDKP2_AltManagementFrame:Show()
-    QDKP2_AltManagementFrame_RightPanel_SearchBox:SetText("")
-    QDKP2_AltManagementFrame_RightPanel_SearchBox:ClearFocus()
+    _G["QDKP2_AltManagementFrame_Header"]:SetText("ALT MANAGEMENT") -- Set title
+    _G["QDKP2_AltManagementFrame_SubHeader"]:SetText("Managing alts for: |cffffd100" .. self.mainCharacter .. "|r")
+    _G["QDKP2_AltManagementFrame_RightPanel_SearchBox"]:SetText("")
+    _G["QDKP2_AltManagementFrame_RightPanel_SearchBox"]:ClearFocus()
     
     self:UpdateAllLists()
 end
@@ -64,18 +73,16 @@ end
 
 -- Logic for the LEFT panel
 function AltManagement:UpdateCurrentAltsList()
-    -- Add the main character at the top
     local displayList = { {name = self.mainCharacter, isMain = true} }
     
-    -- Find all alts for the current main
     for i = 1, QDKP2_GetNumGuildMembers(true) do
         local name = QDKP2_GetGuildRosterInfo(i)
         if name and QDKP2_GetMain(name) == self.mainCharacter and name ~= self.mainCharacter then
-            table.insert(displayList, {name = name, isAlt = true})
+            -- FIX: We were missing `main = self.mainCharacter` here
+            table.insert(displayList, {name = name, isAlt = true, main = self.mainCharacter})
         end
     end
     
-    -- Populate the UI
     for i, entry in ipairs(self.currentAltEntries) do
         local data = displayList[i]
         if data then
@@ -103,7 +110,7 @@ end
 
 -- Logic for the RIGHT panel
 function AltManagement:UpdateAvailableCharsList()
-    local filter = QDKP2_AltManagementFrame_RightPanel_SearchBox:GetText()
+    local filter = _G["QDKP2_AltManagementFrame_RightPanel_SearchBox"]:GetText()
     filter = (filter and filter ~= "") and string.lower(filter) or nil
     
     self.availableChars = {}
@@ -120,25 +127,26 @@ function AltManagement:UpdateAvailableCharsList()
 end
 
 function AltManagement:PopulateAvailableCharsList()
-    local scrollFrame = QDKP2_AltManagementFrame_RightPanel_ScrollFrame
-    local offset = FauxScrollFrame_GetOffset(scrollFrame)
+    if not self.isInitialized then return end
+    
+    local offset = FauxScrollFrame_GetOffset(self.ScrollFrame)
 
-    for i, entry in ipairs(self.availableCharEntries) do
+    for i, entryFrame in ipairs(self.availableCharEntries) do
         local name = self.availableChars[i + offset]
         if name then
-            local nameLabel = _G[entry:GetName().."_Name"]
-            local actionButton = _G[entry:GetName().."_ActionButton"]
+            local nameLabel = _G[entryFrame:GetName().."_Name"]
+            local actionButton = _G[entryFrame:GetName().."_ActionButton"]
             
             nameLabel:SetText(name)
             actionButton:SetText("Assign")
-            entry.characterName = name
-            entry:Show()
+            entryFrame.characterName = name
+            entryFrame:Show()
         else
-            entry:Hide()
+            entryFrame:Hide()
         end
     end
     
-    FauxScrollFrame_Update(scrollFrame, #self.availableChars, self.ENTRIES_PER_PAGE, 18)
+    FauxScrollFrame_Update(self.ScrollFrame, #self.availableChars, #self.entries, 18)
 end
 
 function AltManagement:HandleAssignClick(altName)
