@@ -2885,32 +2885,93 @@
 
 
   
-    <Frame name="QDKP2_AltManagementFrame" inherits="QDKP2DialogTitled" hidden="true">
-      <Size x="450" y="500" />
-      <Anchors><Anchor point="CENTER" /></Anchors>
-      <Layers>
-        <Layer level="ARTWORK">
-          <FontString name="$parent_Header" inherits="GameFontNormalLarge" text="ALT MANAGEMENT">
-            <Anchors><Anchor point="TOP" y="-12" /></Anchors>
-          </FontString>
-          <FontString name="$parent_SubHeader" inherits="GameFontNormal">
-            <Anchors><Anchor point="TOP" relativeTo="$parent_Header" relativePoint="BOTTOM" y="-4" /></Anchors>
-          </FontString>
-        </Layer>
-      </Layers>
-      <Frames>
-        <Button name="$parent_CloseButton" inherits="UIPanelCloseButton">
-          <Anchors><Anchor point="TOPRIGHT" x="-4" y="-4" /></Anchors>
-          <Scripts><OnClick>QDKP2GUI_AltManagement:Hide()</OnClick></Scripts>
+  <Frame name="QDKP2_AltManagement_CurrentAltTemplate" virtual="true">
+    <Size x="180" y="18"/>
+    <Layers>
+      <Layer level="ARTWORK">
+        <FontString name="$parent_Name" inherits="GameFontNormalSmall" justifyH="LEFT"/>
+      </Layer>
+    </Layers>
+    <Frames>
+        <Button name="$parent_ActionButton" inherits="UIPanelButtonTemplate">
+            <Size x="60" y="16"/>
+            <Anchors><Anchor point="RIGHT" x="-5" y="0"/></Anchors>
+            <Scripts>
+                <OnClick>QDKP2GUI_AltManagement:HandleRemoveClick(self:GetParent().characterName);</OnClick>
+            </Scripts>
         </Button>
-        <EditBox name="$parent_SearchBox" inherits="InputBoxTemplate" autoFocus="false">
-          <Size x="200" y="25" />
-          <Anchors><Anchor point="TOP" y="-60" /></Anchors>
-          <Scripts>
-            <OnTextChanged>QDKP2GUI_AltManagement:BuildAndDisplayList()</OnTextChanged>
-  <OnEnterPressed>self:ClearFocus();</OnEnterPressed>
-          </Scripts>
-        </EditBox>
-      </Frames>
-    </Frame>
+    </Frames>
+  </Frame>
+  <Frame name="QDKP2_AltManagement_AvailableAltTemplate" virtual="true">
+    <Size x="180" y="18"/>
+    <Layers>
+      <Layer level="ARTWORK">
+        <FontString name="$parent_Name" inherits="GameFontNormalSmall" justifyH="LEFT"/>
+      </Layer>
+    </Layers>
+    <Frames>
+        <Button name="$parent_ActionButton" inherits="UIPanelButtonTemplate">
+            <Size x="60" y="16"/>
+            <Anchors><Anchor point="RIGHT" x="-5" y="0"/></Anchors>
+            <Scripts>
+                <OnClick>QDKP2GUI_AltManagement:HandleAssignClick(self:GetParent().characterName);</OnClick>
+            </Scripts>
+        </Button>
+    </Frames>
+    <HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD"/>
+  </Frame>
+
+  <Frame name="QDKP2_AltManagementFrame" inherits="QDKP2DialogTitled" hidden="true">
+    <Size x="500" y="500" />
+    <Anchors><Anchor point="CENTER" /></Anchors>
+    <Frames>
+      <Button name="$parent_CloseButton" inherits="UIPanelCloseButton">
+        <Anchors><Anchor point="TOPRIGHT" x="-4" y="-4" /></Anchors>
+        <Scripts><OnClick>QDKP2GUI_AltManagement:Hide()</OnClick></Scripts>
+      </Button>
+      
+      <Frame name="$parent_LeftPanel">
+        <Size x="220" y="440"/>
+        <Anchors><Anchor point="TOPLEFT" x="15" y="-40"/></Anchors>
+        <Layers>
+          <Layer level="ARTWORK">
+            <FontString name="$parent_Title" inherits="GameFontNormalLarge" text="Current Main &amp; Alts">
+              <Anchors><Anchor point="TOP" y="-5"/></Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+      </Frame>
+
+      <Frame name="$parent_RightPanel">
+        <Size x="220" y="440"/>
+        <Anchors><Anchor point="TOPRIGHT" x="-15" y="-40"/></Anchors>
+        <Frames>
+          <EditBox name="$parent_SearchBox" inherits="InputBoxTemplate" autoFocus="false">
+            <Size x="180" y="25" />
+            <Anchors><Anchor point="TOP" y="-25" /></Anchors>
+            <Scripts>
+              <OnTextChanged>QDKP2GUI_AltManagement:UpdateAvailableCharsList()</OnTextChanged>
+              <OnEnterPressed>self:ClearFocus();</OnEnterPressed>
+            </Scripts>
+          </EditBox>
+          <ScrollFrame name="$parent_ScrollFrame" inherits="FauxScrollFrameTemplate">
+            <Size x="220" y="380"/>
+            <Anchors><Anchor point="TOP" relativeTo="$parent_SearchBox" relativePoint="BOTTOM" x="0" y="-5"/></Anchors>
+            <Scripts>
+                <OnVerticalScroll>
+                    FauxScrollFrame_OnVerticalScroll(self, offset, 18, QDKP2GUI_AltManagement.PopulateAvailableCharsList);
+                </OnVerticalScroll>
+            </Scripts>
+          </ScrollFrame>
+        </Frames>
+        <Layers>
+           <Layer level="ARTWORK">
+            <FontString name="$parent_Title" inherits="GameFontNormalLarge" text="Available Characters">
+              <Anchors><Anchor point="TOP" y="-5"/></Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+      </Frame>
+    </Frames>
+  </Frame>
 </Ui>
