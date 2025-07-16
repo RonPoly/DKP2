@@ -1,43 +1,74 @@
--- Copyright 2025 Your Name
--- This file is a part of QDKP_V2 (see about.txt in the Addon's root folder)
-
---                   ## GUI ##
---              Alt Management Window
---
-
 local AltManagement = {}
 AltManagement.ENTRIES_PER_PAGE = 22
 AltManagement.listData = {}
-AltManagement.entries = {}
+AltManagement.isInitialized = false -- We'll use this to build the UI only once
 
-function AltManagement:OnLoad()
-    self.Frame = QDKP2_AltManagementFrame;
+-- This function creates all the necessary frames programmatically
+function AltManagement:CreateFrames()
+    if self.isInitialized then return end
+
+    local parentFrame = QDKP2_AltManagementFrame
+    
+    -- Create the ScrollFrame
+    local scrollFrame = CreateFrame("ScrollFrame", "$parent_ScrollFrame", parentFrame, "FauxScrollFrameTemplate")
+    scrollFrame:SetSize(420, 400)
+    scrollFrame:SetPoint("TOP", QDKP2_AltManagementFrame_SearchBox, "BOTTOM", 0, -10)
+    scrollFrame:SetScript("OnVerticalScroll", function(self, offset)
+        FauxScrollFrame_OnVerticalScroll(self, offset, 18, QDKP2GUI_AltManagement.PopulateVisibleList)
+    end)
+    self.ScrollFrame = scrollFrame
 
     -- Create the scrollable container
-    self.Frame.scrollChild = CreateFrame("Frame", nil, self.Frame.ScrollFrame);
-    self.Frame.scrollChild:SetSize(420, 400);
-    self.Frame.ScrollFrame:SetScrollChild(self.Frame.scrollChild);
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollChild:SetSize(420, 400)
+    scrollFrame:SetScrollChild(scrollChild)
 
     -- Create and parent the list entries
-    local previousEntry;
+    self.entries = {}
+    local previousEntry
     for i=1, self.ENTRIES_PER_PAGE do
-        local entry = CreateFrame("Frame", nil, self.Frame.scrollChild, "QDKP2_AltManagement_EntryTemplate");
-        entry:SetID(i);
+        local entry = CreateFrame("Frame", nil, scrollChild)
+        entry:SetSize(400, 18)
+        entry:SetID(i)
+
+        local name = entry:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+        name:SetPoint("LEFT", 5, 0)
+        entry.Name = name
+
+        local status = entry:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+        status:SetPoint("RIGHT", -80, 0)
+        entry.Status = status
+
+        local button = CreateFrame("Button", nil, entry, "UIPanelButtonTemplate")
+        button:SetSize(70, 16)
+        button:SetPoint("RIGHT", -5, 0)
+        button:SetScript("OnClick", function() self:HandleActionClick(entry) end)
+        entry.ActionButton = button
+        
+        local hl = entry:CreateTexture(nil, "HIGHLIGHT")
+        hl:SetAllPoints(true)
+        hl:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
+        hl:SetBlendMode("ADD")
+        
         if i == 1 then
-            entry:SetPoint("TOPLEFT", 5, -5);
+            entry:SetPoint("TOPLEFT", 5, -5)
         else
-            entry:SetPoint("TOPLEFT", previousEntry, "BOTTOMLEFT", 0, -2);
+            entry:SetPoint("TOPLEFT", previousEntry, "BOTTOMLEFT", 0, -2)
         end
-        previousEntry = entry;
-        self.entries[i] = entry;
+        previousEntry = entry
+        self.entries[i] = entry
     end
+    
+    self.isInitialized = true
 end
 
 function AltManagement:Show(mainCharacter)
+    self:CreateFrames() -- Create frames if they don't exist
+    
     self.mainCharacter = mainCharacter
     if not self.mainCharacter then return end
 
-    self.Frame:Show()
+    QDKP2_AltManagementFrame:Show()
     QDKP2_AltManagementFrame_SubHeader:SetText("Managing alts for: |cffffd100" .. self.mainCharacter .. "|r")
     QDKP2_AltManagementFrame_SearchBox:SetText("")
     QDKP2_AltManagementFrame_SearchBox:ClearFocus()
@@ -45,9 +76,7 @@ function AltManagement:Show(mainCharacter)
 end
 
 function AltManagement:Hide()
-    if self.Frame then
-        self.Frame:Hide()
-    end
+    QDKP2_AltManagementFrame:Hide()
 end
 
 function AltManagement:BuildAndDisplayList()
@@ -104,59 +133,50 @@ function AltManagement:BuildAndDisplayList()
 end
 
 function AltManagement:PopulateVisibleList()
-    local scrollFrame = QDKP2_AltManagementFrame_ScrollFrame
-    local offset = FauxScrollFrame_GetOffset(scrollFrame)
+    if not self.isInitialized then return end
+
+    local offset = FauxScrollFrame_GetOffset(self.ScrollFrame)
     
     for i = 1, self.ENTRIES_PER_PAGE do
         local entryFrame = self.entries[i]
-        if not entryFrame then return end
-
-        local dataIndex = i + offset
-        local data = self.listData[dataIndex]
+        local data = self.listData[i + offset]
         
         if data then
-            entryFrame.characterName = data.name
             entryFrame.characterStatus = data
-            
-            local nameLabel = _G[entryFrame:GetName().."_Name"]
-            local statusLabel = _G[entryFrame:GetName().."_Status"]
-            local actionButton = _G[entryFrame:GetName().."_ActionButton"]
-            
-            nameLabel:SetPoint("LEFT", data.indent, 0)
-            nameLabel:SetText(data.name)
+            entryFrame.Name:SetPoint("LEFT", data.indent, 0)
+            entryFrame.Name:SetText(data.name)
             
             if data.isCurrentMain then
-                nameLabel:SetTextColor(1, 0.82, 0)
-                statusLabel:SetText("|cffffd100(Current Main)|r")
-                actionButton:Hide()
+                entryFrame.Name:SetTextColor(1, 0.82, 0)
+                entryFrame.Status:SetText("|cffffd100(Current Main)|r")
+                entryFrame.ActionButton:Hide()
             elseif data.isMain then
-                nameLabel:SetTextColor(1, 1, 1)
-                statusLabel:SetText("")
-                actionButton:SetText("Assign")
-                actionButton:Show()
+                entryFrame.Name:SetTextColor(1, 1, 1)
+                entryFrame.Status:SetText("")
+                entryFrame.ActionButton:SetText("Assign")
+                entryFrame.ActionButton:Show()
             elseif data.isAlt then
-                nameLabel:SetTextColor(0.8, 0.8, 0.8)
+                entryFrame.Name:SetTextColor(0.8, 0.8, 0.8)
                 if data.main then
-                    statusLabel:SetText("|cffaaaaaa(Alt of " .. data.main .. ")|r")
+                    entryFrame.Status:SetText("|cffaaaaaa(Alt of " .. data.main .. ")|r")
                 else
-                    statusLabel:SetText("|cffff0000(Error: No Main)|r")
+                    entryFrame.Status:SetText("|cffff0000(Error: No Main)|r")
                 end
                 
                 if data.main == self.mainCharacter then
-                    actionButton:SetText("Remove")
-                    actionButton:Show()
+                    entryFrame.ActionButton:SetText("Remove")
+                    entryFrame.ActionButton:Show()
                 else
-                    actionButton:Hide()
+                    entryFrame.ActionButton:Hide()
                 end
             end
-            
             entryFrame:Show()
         else
             entryFrame:Hide()
         end
     end
     
-    FauxScrollFrame_Update(scrollFrame, #self.listData, self.ENTRIES_PER_PAGE, 18)
+    FauxScrollFrame_Update(self.ScrollFrame, #self.listData, self.ENTRIES_PER_PAGE, 18)
 end
 
 function AltManagement:HandleActionClick(entryFrame)
