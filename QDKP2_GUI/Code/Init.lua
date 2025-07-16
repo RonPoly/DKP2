@@ -30,6 +30,7 @@ function QDKP2GUI_OnLoad()
   --hook to detect shift-click on item link
   QDKP2_Old_ChatEdit_InsertLink = ChatEdit_InsertLink
   ChatEdit_InsertLink = QDKP2_ChatEdit_InsertLink
+  QDKP2GUI_AltManagement:OnLoad()
 end
 
 -------------------------------- QDKP2 EVENTS MANAGER --------------------------------
