@@ -2957,7 +2957,8 @@
             <Size x="180" y="25" />
             <Anchors><Anchor point="TOP" y="-25" /></Anchors>
             <Scripts>
-              <OnTextChanged>QDKP2GUI_AltManagement:UpdateAvailableCharsList()</OnTextChanged>
+              <!-- This tells the search box to run our update function whenever you type -->
+              <OnTextChanged>QDKP2_AltManagementFrame_UpdateAvailableCharsList();</OnTextChanged>
               <OnEnterPressed>self:ClearFocus();</OnEnterPressed>
             </Scripts>
           </EditBox>
