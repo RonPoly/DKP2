@@ -2,6 +2,10 @@ local AltManagement = {}
 AltManagement.ENTRIES_PER_PAGE = 22
 AltManagement.listData = {}
 AltManagement.isInitialized = false
+-- Table used to store the current alt->main links. We reference the
+-- core table if available so that changes persist through QDKP's
+-- normal saved variables.
+AltManagement.altLinks = QDKP2altsRestore or {}
 
 -- This function runs once to create all the UI elements we need
 function AltManagement:Initialize()
@@ -49,9 +53,14 @@ end
 
 function AltManagement:Show(mainCharacter)
     self:Initialize() -- Create frames if they don't exist yet
-    
+
     self.mainCharacter = mainCharacter
     if not self.mainCharacter then return end
+
+    -- Make sure our alt link table references the latest data
+    if QDKP2altsRestore then
+        self.altLinks = QDKP2altsRestore
+    end
 
     QDKP2_AltManagementFrame:Show()
     _G["QDKP2_AltManagementFrame_Header"]:SetText("ALT MANAGEMENT") -- Set title
@@ -64,6 +73,23 @@ end
 
 function AltManagement:Hide()
     QDKP2_AltManagementFrame:Hide()
+end
+
+-- Searches the guild roster for characters matching the given name
+-- Returns a sorted table of character names
+function AltManagement:SearchGuildForCharacter(name)
+    local results = {}
+    local query = name and name ~= "" and string.lower(name) or nil
+    for i = 1, QDKP2_GetNumGuildMembers(true) do
+        local fullName = QDKP2_GetGuildRosterInfo(i)
+        if fullName and not QDKP2_IsAlt(fullName) and fullName ~= self.mainCharacter then
+            if not query or string.find(string.lower(fullName), query, 1, true) then
+                table.insert(results, fullName)
+            end
+        end
+    end
+    table.sort(results)
+    return results
 end
 
 function AltManagement:UpdateAllLists()
@@ -111,18 +137,7 @@ end
 -- Logic for the RIGHT panel
 function AltManagement:UpdateAvailableCharsList()
     local filter = _G["QDKP2_AltManagementFrame_RightPanel_SearchBox"]:GetText()
-    filter = (filter and filter ~= "") and string.lower(filter) or nil
-    
-    self.availableChars = {}
-    for i = 1, QDKP2_GetNumGuildMembers(true) do
-        local name = QDKP2_GetGuildRosterInfo(i)
-        if name and not QDKP2_IsAlt(name) and name ~= self.mainCharacter then
-            if not filter or string.find(string.lower(name), filter) then
-                table.insert(self.availableChars, name)
-            end
-        end
-    end
-    table.sort(self.availableChars)
+    self.availableChars = self:SearchGuildForCharacter(filter)
     self:PopulateAvailableCharsList()
 end
 
@@ -149,16 +164,39 @@ function AltManagement:PopulateAvailableCharsList()
     FauxScrollFrame_Update(self.ScrollFrame, #self.availableChars, #self.entries, 18)
 end
 
+-- Links an alt to a main character and stores the relation
+function AltManagement:LinkAltToMain(altName, mainName)
+    if not altName or not mainName then
+        QDKP2_Msg("You must select both an alt and a main character.")
+        return
+    end
+
+    if self.altLinks[altName] then
+        QDKP2_Msg(altName .. " is already linked to a main.")
+        return
+    end
+
+    self.altLinks[altName] = mainName
+    -- Use the core function so the change is correctly persisted
+    if QDKP2_MakeAlt then
+        QDKP2_MakeAlt(altName, mainName, true)
+    end
+    QDKP2_Msg(altName .. " has been successfully linked to " .. mainName .. "!")
+end
+
 function AltManagement:HandleAssignClick(altName)
     if self.mainCharacter and altName then
-        QDKP2_MakeAlt(altName, self.mainCharacter, true)
+        self:LinkAltToMain(altName, self.mainCharacter)
         self:UpdateAllLists()
     end
 end
 
 function AltManagement:HandleRemoveClick(altName)
     if altName then
-        QDKP2_ClearAlt(altName)
+        self.altLinks[altName] = nil
+        if QDKP2_ClearAlt then
+            QDKP2_ClearAlt(altName)
+        end
         self:UpdateAllLists()
     end
 end
