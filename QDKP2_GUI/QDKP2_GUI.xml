@@ -2924,6 +2924,13 @@
   <Frame name="QDKP2_AltManagementFrame" inherits="QDKP2DialogTitled" hidden="true">
     <Size x="500" y="500" />
     <Anchors><Anchor point="CENTER" /></Anchors>
+    <Layers>
+      <Layer level="ARTWORK">
+        <FontString name="$parent_SubHeader" inherits="GameFontNormalSmall">
+          <Anchors><Anchor point="TOP" y="-25"/></Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
     <Frames>
       <Button name="$parent_CloseButton" inherits="UIPanelCloseButton">
         <Anchors><Anchor point="TOPRIGHT" x="-4" y="-4" /></Anchors>

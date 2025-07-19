@@ -18,7 +18,8 @@ function AltManagement:Initialize()
     local leftParent = _G[parentFrame:GetName().."_LeftPanel"]
     local previousLeftEntry
     for i = 1, self.ENTRIES_PER_PAGE do
-        local entry = CreateFrame("Frame", nil, leftParent, "QDKP2_AltManagement_CurrentAltTemplate")
+        local entryName = leftParent:GetName() .. "_Entry" .. i
+        local entry = CreateFrame("Frame", entryName, leftParent, "QDKP2_AltManagement_CurrentAltTemplate")
         if i == 1 then
             entry:SetPoint("TOPLEFT", 10, -30)
         else
@@ -31,14 +32,15 @@ function AltManagement:Initialize()
     -- Create the Right Panel (Available Characters) UI elements
     self.availableCharEntries = {}
     local scrollFrame = _G[parentFrame:GetName().."_RightPanel_ScrollFrame"]
-    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    local scrollChild = CreateFrame("Frame", scrollFrame:GetName() .. "_Child", scrollFrame)
     scrollChild:SetSize(220, 380)
     scrollFrame:SetScrollChild(scrollChild)
     self.ScrollFrame = scrollFrame -- Store reference for later
     
     local previousRightEntry
     for i = 1, self.ENTRIES_PER_PAGE do
-        local entry = CreateFrame("Frame", nil, scrollChild, "QDKP2_AltManagement_AvailableAltTemplate")
+        local entryName = scrollChild:GetName() .. "_Entry" .. i
+        local entry = CreateFrame("Frame", entryName, scrollChild, "QDKP2_AltManagement_AvailableAltTemplate")
         if i == 1 then
             entry:SetPoint("TOPLEFT", 5, -5)
         else
@@ -161,7 +163,7 @@ function AltManagement:PopulateAvailableCharsList()
         end
     end
     
-    FauxScrollFrame_Update(self.ScrollFrame, #self.availableChars, #self.entries, 18)
+    FauxScrollFrame_Update(self.ScrollFrame, #self.availableChars, self.ENTRIES_PER_PAGE, 18)
 end
 
 -- Links an alt to a main character and stores the relation
