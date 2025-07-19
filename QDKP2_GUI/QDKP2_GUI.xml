@@ -2953,18 +2953,21 @@
         <Size x="220" y="440"/>
         <Anchors><Anchor point="TOPRIGHT" x="-15" y="-40"/></Anchors>
         <Frames>
-          <EditBox name="$parent_SearchBox" inherits="InputBoxTemplate" autoFocus="false">
+          <EditBox name="QDKP2_AltManagementFrame_SearchBox" inherits="InputBoxTemplate" autoFocus="false">
             <Size x="180" y="25" />
             <Anchors><Anchor point="TOP" y="-25" /></Anchors>
             <Scripts>
               <!-- This tells the search box to run our update function whenever you type -->
-              <OnTextChanged>QDKP2_AltManagementFrame_UpdateAvailableCharsList();</OnTextChanged>
+              <OnTextChanged>
+                -- This now calls our new, reliable update function
+                QDKP2_AltManagementFrame_UpdateDisplay();
+              </OnTextChanged>
               <OnEnterPressed>self:ClearFocus();</OnEnterPressed>
             </Scripts>
           </EditBox>
           <ScrollFrame name="$parent_ScrollFrame" inherits="FauxScrollFrameTemplate">
             <Size x="220" y="380"/>
-            <Anchors><Anchor point="TOP" relativeTo="$parent_SearchBox" relativePoint="BOTTOM" x="0" y="-5"/></Anchors>
+            <Anchors><Anchor point="TOP" relativeTo="QDKP2_AltManagementFrame_SearchBox" relativePoint="BOTTOM" x="0" y="-5"/></Anchors>
             <Scripts>
                 <OnVerticalScroll>
                     FauxScrollFrame_OnVerticalScroll(self, offset, 18, QDKP2GUI_AltManagement.PopulateAvailableCharsList);

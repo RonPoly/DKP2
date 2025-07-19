@@ -1,236 +1,146 @@
-local AltManagement = {}
-AltManagement.ENTRIES_PER_PAGE = 22
-AltManagement.listData = {}
-AltManagement.isInitialized = false
--- Table used to store the current alt->main links. We reference the
--- core table if available so that changes persist through QDKP's
--- normal saved variables.
-AltManagement.altLinks = QDKP2altsRestore or {}
+--=============================================================================
+-- Alt Management Frame - REVISED
+--=============================================================================
 
--- This function runs once to create all the UI elements we need
-function AltManagement:Initialize()
-    if self.isInitialized then return end
+local selectedMain = nil
+local selectedAlt = nil
+local fullGuildRoster = {} -- We will store the full roster here to search against it
 
-    local parentFrame = QDKP2_AltManagementFrame
-    
-    -- Create the Left Panel (Current Alts) UI elements
-    self.currentAltEntries = {}
-    local leftParent = _G[parentFrame:GetName().."_LeftPanel"]
-    local previousLeftEntry
-    for i = 1, self.ENTRIES_PER_PAGE do
-        local entryName = leftParent:GetName() .. "_Entry" .. i
-        local entry = CreateFrame("Frame", entryName, leftParent, "QDKP2_AltManagement_CurrentAltTemplate")
-        if i == 1 then
-            entry:SetPoint("TOPLEFT", 10, -30)
-        else
-            entry:SetPoint("TOPLEFT", previousLeftEntry, "BOTTOMLEFT", 0, -2)
-        end
-        previousLeftEntry = entry
-        self.currentAltEntries[i] = entry
-    end
-
-    -- Create the Right Panel (Available Characters) UI elements
-    self.availableCharEntries = {}
-    local scrollFrame = _G[parentFrame:GetName().."_RightPanel_ScrollFrame"]
-    local scrollChild = CreateFrame("Frame", scrollFrame:GetName() .. "_Child", scrollFrame)
-    scrollChild:SetSize(220, 380)
-    scrollFrame:SetScrollChild(scrollChild)
-    self.ScrollFrame = scrollFrame -- Store reference for later
-    
-    local previousRightEntry
-    for i = 1, self.ENTRIES_PER_PAGE do
-        local entryName = scrollChild:GetName() .. "_Entry" .. i
-        local entry = CreateFrame("Frame", entryName, scrollChild, "QDKP2_AltManagement_AvailableAltTemplate")
-        if i == 1 then
-            entry:SetPoint("TOPLEFT", 5, -5)
-        else
-            entry:SetPoint("TOPLEFT", previousRightEntry, "BOTTOMLEFT", 0, -2)
-        end
-        previousRightEntry = entry
-        self.availableCharEntries[i] = entry
-    end
-    
-    self.isInitialized = true
-end
-
-function AltManagement:Show(mainCharacter)
-    self:Initialize() -- Create frames if they don't exist yet
-
-    self.mainCharacter = mainCharacter
-    if not self.mainCharacter then return end
-
-    -- Make sure our alt link table references the latest data
-    if QDKP2altsRestore then
-        self.altLinks = QDKP2altsRestore
-    end
-
-    QDKP2_AltManagementFrame:Show()
-    _G["QDKP2_AltManagementFrame_Header"]:SetText("ALT MANAGEMENT") -- Set title
-    _G["QDKP2_AltManagementFrame_SubHeader"]:SetText("Managing alts for: |cffffd100" .. self.mainCharacter .. "|r")
-    _G["QDKP2_AltManagementFrame_RightPanel_SearchBox"]:SetText("")
-    _G["QDKP2_AltManagementFrame_RightPanel_SearchBox"]:ClearFocus()
-    
-    self:UpdateAllLists()
-end
-
-function AltManagement:Hide()
-    QDKP2_AltManagementFrame:Hide()
-end
-
--- Searches the guild roster for characters matching the given name
--- Returns a sorted table of character names
-function AltManagement:SearchGuildForCharacter(name)
-    local results = {}
-    local query = name and name ~= "" and string.lower(name) or nil
-    for i = 1, QDKP2_GetNumGuildMembers(true) do
-        local fullName = QDKP2_GetGuildRosterInfo(i)
-        if fullName and not QDKP2_IsAlt(fullName) and fullName ~= self.mainCharacter then
-            if not query or string.find(string.lower(fullName), query, 1, true) then
-                table.insert(results, fullName)
+-- Create a frame to handle game events
+local eventHandler = CreateFrame("Frame")
+eventHandler:SetScript("OnEvent", function(self, event, ...)
+    if event == "GUILD_ROSTER_UPDATE" then
+        -- This is the trigger. When the guild roster is ready, populate our local table.
+        wipe(fullGuildRoster)
+        local numGuildMembers = GetNumGuildMembers(true)
+        for i = 1, numGuildMembers do
+            local fullName = GetGuildRosterInfo(i)
+            if fullName then
+                table.insert(fullGuildRoster, fullName)
             end
         end
+        -- Now that our local roster is full, update the display
+        QDKP2_AltManagementFrame_UpdateDisplay()
     end
-    table.sort(results)
-    return results
+end)
+
+-- When the frame is loaded for the first time
+function QDKP2_AltManagementFrame_OnLoad(self)
+    self:RegisterForDrag("LeftButton")
+    self.Title:SetText("Alt Management")
+    self.SubHeader:SetText("Link alts to main characters")
 end
 
-function AltManagement:UpdateAllLists()
-    self:UpdateCurrentAltsList()
-    self:UpdateAvailableCharsList()
+-- When the frame is shown
+function QDKP2_AltManagementFrame_OnShow(self)
+    -- Reset selections
+    selectedMain = nil
+    selectedAlt = nil
+    QDKP2_AltManagementFrame.SelectedMain:SetText("Main: (none)")
+    QDKP2_AltManagementFrame.SelectedAlt:SetText("Alt: (none)")
+
+    -- Clear the search box
+    QDKP2_AltManagementFrame_SearchBox:SetText("")
+
+    -- Register for the event and request the roster
+    eventHandler:RegisterEvent("GUILD_ROSTER_UPDATE")
+    GuildRoster()
 end
 
--- Logic for the LEFT panel
-function AltManagement:UpdateCurrentAltsList()
-    local displayList = { {name = self.mainCharacter, isMain = true} }
-    
-    for i = 1, QDKP2_GetNumGuildMembers(true) do
-        local name = QDKP2_GetGuildRosterInfo(i)
-        if name and QDKP2_GetMain(name) == self.mainCharacter and name ~= self.mainCharacter then
-            -- FIX: We were missing `main = self.mainCharacter` here
-            table.insert(displayList, {name = name, isAlt = true, main = self.mainCharacter})
-        end
-    end
-    
-    for i, entry in ipairs(self.currentAltEntries) do
-        local data = displayList[i]
-        if data then
-            local nameLabel = _G[entry:GetName().."_Name"]
-            local actionButton = _G[entry:GetName().."_ActionButton"]
+-- When the frame is hidden
+function QDKP2_AltManagementFrame_OnHide(self)
+    -- Unregister the event to save resources when the window is closed
+    eventHandler:UnregisterEvent("GUILD_ROSTER_UPDATE")
+end
 
-            nameLabel:SetText(data.name)
-            nameLabel:SetPoint("LEFT", data.isAlt and 20 or 5, 0)
-            
-            if data.isMain then
-                nameLabel:SetTextColor(1, 0.82, 0)
-                actionButton:Hide()
-            else -- isAlt
-                nameLabel:SetTextColor(0.8, 0.8, 0.8)
-                actionButton:SetText("Remove")
-                entry.characterName = data.name
-                actionButton:Show()
+-- This is our main display update function now. It handles both searching and showing the full list.
+function QDKP2_AltManagementFrame_UpdateDisplay()
+    local searchText = QDKP2_AltManagementFrame_SearchBox:GetText():lower()
+    local resultsToShow = {}
+
+    if searchText and searchText ~= "" then
+        -- Search our local, complete roster table
+        for _, characterName in ipairs(fullGuildRoster) do
+            if characterName:lower():find(searchText, 1, true) then
+                table.insert(resultsToShow, characterName)
             end
-            entry:Show()
+        end
+    else
+        -- If search is empty, show the full roster
+        resultsToShow = fullGuildRoster
+    end
+
+    QDKP2_AltManagementFrame_PopulateList(resultsToShow)
+end
+
+-- This function populates the scroll list with the provided results
+function QDKP2_AltManagementFrame_PopulateList(characterList)
+    local scrollFrame = QDKP2_AltManagementFrame_CharacterListScrollFrame
+    FauxScrollFrame_Update(scrollFrame, #characterList, 10, 16)
+
+    for i = 1, 10 do
+        local index = i + FauxScrollFrame_GetOffset(scrollFrame)
+        local button = _G["QDKP2_AltManagementFrame_CharacterButton" .. i]
+
+        if index <= #characterList then
+            local characterName = characterList[index]
+            if characterName then
+                button:SetText(characterName)
+                button:Show()
+            else
+                button:Hide()
+            end
         else
-            entry:Hide()
+            button:Hide()
         end
     end
 end
 
--- Logic for the RIGHT panel
-function AltManagement:UpdateAvailableCharsList()
-    local filter = _G["QDKP2_AltManagementFrame_RightPanel_SearchBox"]:GetText()
-    self.availableChars = self:SearchGuildForCharacter(filter)
-    self:PopulateAvailableCharsList()
-end
-
-function AltManagement:PopulateAvailableCharsList()
-    if not self.isInitialized then return end
-    
-    local offset = FauxScrollFrame_GetOffset(self.ScrollFrame)
-
-    for i, entryFrame in ipairs(self.availableCharEntries) do
-        local name = self.availableChars[i + offset]
-        if name then
-            local nameLabel = _G[entryFrame:GetName().."_Name"]
-            local actionButton = _G[entryFrame:GetName().."_ActionButton"]
-            
-            nameLabel:SetText(name)
-            actionButton:SetText("Assign")
-            entryFrame.characterName = name
-            entryFrame:Show()
-        else
-            entryFrame:Hide()
-        end
+-- When a character in the list is clicked
+function QDKP2_AltManagementFrame_CharacterButton_OnClick(self)
+    local characterName = self:GetText()
+    if IsShiftKeyDown() then
+        selectedMain = characterName
+        QDKP2_AltManagementFrame.SelectedMain:SetText("Main: " .. characterName)
+    else
+        selectedAlt = characterName
+        QDKP2_AltManagementFrame.SelectedAlt:SetText("Alt: " .. characterName)
     end
-    
-    FauxScrollFrame_Update(self.ScrollFrame, #self.availableChars, self.ENTRIES_PER_PAGE, 18)
 end
 
--- Links an alt to a main character and stores the relation
-function AltManagement:LinkAltToMain(altName, mainName)
-    if not altName or not mainName then
-        QDKP2_Msg("You must select both an alt and a main character. (Hold Shift to select a main)")
+-- Link the selected alt to the selected main (with improved logic)
+function QDKP2_AltManagementFrame_LinkAlt()
+    if not selectedAlt or not selectedMain then
+        print("You must select both an alt and a main character. (Hold Shift to select a main)")
         return
     end
 
-    if altName == mainName then
-        QDKP2_Msg("A character cannot be their own alt.")
+    if selectedAlt == selectedMain then
+        print("A character cannot be their own alt.")
         return
     end
 
-    if not self.altLinks then
-        self.altLinks = {}
+    if not QDKP2.db.profile.altLinks then
+        QDKP2.db.profile.altLinks = {}
     end
 
-    for alt, main in pairs(self.altLinks) do
-        if main == altName then
-            QDKP2_Msg(altName .. " is already the main for " .. alt .. ". You cannot link them as an alt.")
+    for alt, main in pairs(QDKP2.db.profile.altLinks) do
+        if main == selectedAlt then
+            print(selectedAlt .. " is already the main for " .. alt .. ". You cannot link them as an alt.")
             return
         end
     end
 
-    if self.altLinks[mainName] then
-        QDKP2_Msg(mainName .. " is already an alt for " .. self.altLinks[mainName] .. ". You cannot use them as a main.")
+    if QDKP2.db.profile.altLinks[selectedMain] then
+        print(selectedMain .. " is already an alt for " .. QDKP2.db.profile.altLinks[selectedMain] .. ". You cannot use them as a main.")
         return
     end
 
-    if self.altLinks[altName] then
-        QDKP2_Msg(altName .. " is already linked to " .. self.altLinks[altName] .. ". Unlink first.")
+    if QDKP2.db.profile.altLinks[selectedAlt] then
+        print(selectedAlt .. " is already linked to " .. QDKP2.db.profile.altLinks[selectedAlt] .. ". Unlink first.")
         return
     end
 
-    self.altLinks[altName] = mainName
-
-    if QDKP2_MakeAlt then
-        QDKP2_MakeAlt(altName, mainName, true)
-    end
-
-    QDKP2_Msg("|cff00ff00" .. altName .. " has been successfully linked to " .. mainName .. "!|r")
-end
-
-function AltManagement:HandleAssignClick(altName)
-    if self.mainCharacter and altName then
-        self:LinkAltToMain(altName, self.mainCharacter)
-        self:UpdateAllLists()
-    end
-end
-
-function AltManagement:HandleRemoveClick(altName)
-    if altName then
-        self.altLinks[altName] = nil
-        if QDKP2_ClearAlt then
-            QDKP2_ClearAlt(altName)
-        end
-        self:UpdateAllLists()
-    end
-end
-
--- Initialize the class object
-QDKP2GUI_AltManagement = AltManagement
-
--- Wrapper for XML OnTextChanged event
-function QDKP2_AltManagementFrame_UpdateAvailableCharsList()
-    if QDKP2GUI_AltManagement then
-        QDKP2GUI_AltManagement:UpdateAvailableCharsList()
-    end
+    QDKP2.db.profile.altLinks[selectedAlt] = selectedMain
+    print("|cff00ff00" .. selectedAlt .. " has been successfully linked to " .. selectedMain .. "!|r")
 end
