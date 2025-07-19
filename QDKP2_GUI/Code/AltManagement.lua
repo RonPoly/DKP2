@@ -169,21 +169,43 @@ end
 -- Links an alt to a main character and stores the relation
 function AltManagement:LinkAltToMain(altName, mainName)
     if not altName or not mainName then
-        QDKP2_Msg("You must select both an alt and a main character.")
+        QDKP2_Msg("You must select both an alt and a main character. (Hold Shift to select a main)")
+        return
+    end
+
+    if altName == mainName then
+        QDKP2_Msg("A character cannot be their own alt.")
+        return
+    end
+
+    if not self.altLinks then
+        self.altLinks = {}
+    end
+
+    for alt, main in pairs(self.altLinks) do
+        if main == altName then
+            QDKP2_Msg(altName .. " is already the main for " .. alt .. ". You cannot link them as an alt.")
+            return
+        end
+    end
+
+    if self.altLinks[mainName] then
+        QDKP2_Msg(mainName .. " is already an alt for " .. self.altLinks[mainName] .. ". You cannot use them as a main.")
         return
     end
 
     if self.altLinks[altName] then
-        QDKP2_Msg(altName .. " is already linked to a main.")
+        QDKP2_Msg(altName .. " is already linked to " .. self.altLinks[altName] .. ". Unlink first.")
         return
     end
 
     self.altLinks[altName] = mainName
-    -- Use the core function so the change is correctly persisted
+
     if QDKP2_MakeAlt then
         QDKP2_MakeAlt(altName, mainName, true)
     end
-    QDKP2_Msg(altName .. " has been successfully linked to " .. mainName .. "!")
+
+    QDKP2_Msg("|cff00ff00" .. altName .. " has been successfully linked to " .. mainName .. "!|r")
 end
 
 function AltManagement:HandleAssignClick(altName)
@@ -205,3 +227,10 @@ end
 
 -- Initialize the class object
 QDKP2GUI_AltManagement = AltManagement
+
+-- Wrapper for XML OnTextChanged event
+function QDKP2_AltManagementFrame_UpdateAvailableCharsList()
+    if QDKP2GUI_AltManagement then
+        QDKP2GUI_AltManagement:UpdateAvailableCharsList()
+    end
+end
