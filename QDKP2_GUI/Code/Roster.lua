@@ -872,6 +872,10 @@ function myClass.PlayerMenu(self,List)
   local menu={}
 
   if #sel == 1 then
+    -- Ensure the alt management table exists so calling :Show does not
+    -- throw an error when the roster menu is opened before the frame is
+    -- fully initialised.
+    if QDKP2GUI_AltManagement == nil then QDKP2GUI_AltManagement = {} end
     table.insert(menu, {text = "ALT MANAGEMENT", func = function()
       QDKP2GUI_AltManagement:Show(sel[1])
     end})
